@@ -10,15 +10,13 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-
-// Importando seus componentes customizados e utilitários
 import Button from "../src/components/Button";
 import Input from "../src/components/Input";
 import { COLORS } from "../src/utils/theme";
 import { validateRegisterForm } from "../src/utils/validators";
 
 export default function Register() {
-  // --- 1. ESTADOS (States) ---
+  //ESTADOS (States)
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
@@ -30,7 +28,7 @@ export default function Register() {
   const [errors, setErrors] = useState<any>({});
   const [loading, setLoading] = useState(false);
 
-  // --- 2. FUNÇÃO DE CADASTRO ---
+  //FUNÇÃO DE CADASTRO
   const handleRegister = async () => {
     // Validação usando seu arquivo validators.ts
     const validationErrors = validateRegisterForm(formData);
@@ -50,7 +48,7 @@ export default function Register() {
     }, 2000);
   };
 
-  // --- 3. RENDERIZAÇÃO ---
+  //RENDERIZAÇÃO
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: COLORS.background }]}
@@ -158,7 +156,7 @@ export default function Register() {
   );
 }
 
-// --- 4. ESTILOS ---
+//ESTILOS
 const styles = StyleSheet.create({
   container: {
     flex: 1,
