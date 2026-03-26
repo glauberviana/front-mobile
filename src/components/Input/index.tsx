@@ -1,36 +1,47 @@
-import { Text, TextInput, View } from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
+import React, { useState } from "react";
+import { Text, TextInput, TextInputProps, View } from "react-native";
 import styles from "./styles";
 
-type Props = {
+interface Props extends TextInputProps {
   label?: string;
-  placeholder?: string;
-  value: string;
-  onChange: (text: string) => void;
   error?: string;
-  secureTextEntry?: boolean;
-};
+  iconName?: keyof typeof MaterialIcons.glyphMap;
+}
 
-export default function Input({
-  label,
-  placeholder,
-  value,
-  onChange,
-  error,
-  secureTextEntry = false,
-}: Props) {
+export default function Input({ label, error, iconName, ...rest }: Props) {
+  const [isFocused, setIsFocused] = useState(false);
+
   return (
     <View style={styles.container}>
       {label && <Text style={styles.label}>{label}</Text>}
 
-      <TextInput
-        style={[styles.input, error && styles.inputError]}
-        placeholder={placeholder}
-        value={value}
-        onChangeText={onChange}
-        secureTextEntry={secureTextEntry}
-      />
+      <View
+        style={[
+          styles.inputContainer,
+          isFocused && { borderColor: "#3B6EDC", borderWidth: 2 },
+        ]}
+      >
+        {iconName && (
+          <MaterialIcons
+            name={iconName}
+            size={20}
+            color={isFocused ? "#3B6EDC" : "#9ca3af"}
+            style={styles.icon}
+          />
+        )}
 
-      {error && <Text style={styles.error}>{error}</Text>}
+        <TextInput
+          style={styles.input}
+          placeholderTextColor="#9ca3af"
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          underlineColorAndroid="transparent"
+          {...rest}
+        />
+      </View>
+
+      {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   );
 }

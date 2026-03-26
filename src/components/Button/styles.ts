@@ -1,17 +1,20 @@
 import { StyleSheet } from "react-native";
 
-export default StyleSheet.create({
+export const styles = StyleSheet.create({
   button: {
-    backgroundColor: "#3B6EDC",
-    padding: 14,
-    borderRadius: 10,
+    backgroundColor: "#3B6EDC", // Use COLORS.primary se preferir
+    padding: 16,
+    borderRadius: 12,
     alignItems: "center",
+    justifyContent: "center",
+  },
+  buttonText: {
+    // <<-- O NOME TEM QUE SER EXATAMENTE ESSE
+    color: "#FFFFFF",
+    fontSize: 16,
+    fontWeight: "bold",
   },
   disabled: {
-    backgroundColor: "#999",
-  },
-  text: {
-    color: "#fff",
-    fontWeight: "bold",
+    backgroundColor: "#CCCCCC",
   },
 });

@@ -28,14 +28,14 @@ export default function Login() {
           label="E-mail"
           placeholder="Digite seu e-mail"
           value={email}
-          onChange={setEmail}
+          onChangeText={setEmail}
         />
 
         <Input
           label="Senha"
           placeholder="Digite sua senha"
           value={password}
-          onChange={setPassword}
+          onChangeText={setPassword}
           secureTextEntry
         />
 

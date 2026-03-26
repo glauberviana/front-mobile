@@ -1,29 +1,30 @@
-import { ActivityIndicator, Text, TouchableOpacity } from "react-native";
-import styles from "./styles";
+import {
+  ActivityIndicator,
+  Text,
+  TouchableOpacity,
+  TouchableOpacityProps,
+} from "react-native";
+import { styles } from "./styles";
 
-type Props = {
+// 1. Adicione o isLoading na interface
+interface ButtonProps extends TouchableOpacityProps {
   title: string;
-  onPress: () => void;
-  loading?: boolean;
-  disabled?: boolean;
-};
+  isLoading?: boolean; // O '?' indica que é opcional
+}
 
-export default function Button({
-  title,
-  onPress,
-  loading = false,
-  disabled = false,
-}: Props) {
+// 2. Receba o isLoading aqui nos parâmetros
+export default function Button({ title, isLoading, ...rest }: ButtonProps) {
   return (
     <TouchableOpacity
-      style={[styles.button, disabled && styles.disabled]}
-      onPress={onPress}
-      disabled={disabled || loading}
+      style={[rest.style, styles.button]}
+      disabled={isLoading} // Desabilita o clique se estiver carregando
+      {...rest}
     >
-      {loading ? (
-        <ActivityIndicator color="#fff" />
+      {/* 3. Se estiver carregando, mostra o spinner, senão mostra o texto */}
+      {isLoading ? (
+        <ActivityIndicator color="#FFF" />
       ) : (
-        <Text style={styles.text}>{title}</Text>
+        <Text style={styles.buttonText}>{title}</Text>
       )}
     </TouchableOpacity>
   );
