@@ -25,6 +25,10 @@ export default StyleSheet.create({
     marginRight: 8,
   },
 
+  iconRight: {
+    marginLeft: 8,
+  },
+
   input: {
     flex: 1,
     fontSize: 16,

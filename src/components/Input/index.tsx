@@ -20,6 +20,7 @@ export default function Input({ label, error, iconName, ...rest }: Props) {
         style={[
           styles.inputContainer,
           isFocused && { borderColor: "#3B6EDC", borderWidth: 2 },
+          error && { borderColor: "#ef4444", borderWidth: 2 },
         ]}
       >
         {iconName && (

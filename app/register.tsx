@@ -30,7 +30,6 @@ export default function Register() {
 
   //FUNÇÃO DE CADASTRO
   const handleRegister = async () => {
-    // Validação usando seu arquivo validators.ts
     const validationErrors = validateRegisterForm(formData);
 
     if (Object.keys(validationErrors).length > 0) {
@@ -47,7 +46,17 @@ export default function Register() {
       alert("Conta criada com sucesso!");
     }, 2000);
   };
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, "");
 
+    if (numbers.length <= 2) return numbers;
+
+    if (numbers.length <= 7) {
+      return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    }
+
+    return `(${numbers.slice(0, 2)})${numbers.slice(2, 7)} - ${numbers.slice(7, 11)}`;
+  };
   //RENDERIZAÇÃO
   return (
     <SafeAreaView
@@ -99,7 +108,7 @@ export default function Register() {
               keyboardType="phone-pad"
               value={formData.contato}
               onChangeText={(text) =>
-                setFormData({ ...formData, contato: text })
+                setFormData({ ...formData, contato: formatPhone(text) })
               }
               error={errors.contato}
             />
@@ -110,7 +119,7 @@ export default function Register() {
                   label="Senha"
                   placeholder="••••••"
                   secureTextEntry
-                  iconName="lock"
+                  iconName="vpn-key"
                   value={formData.senha}
                   onChangeText={(text) =>
                     setFormData({ ...formData, senha: text })
@@ -123,7 +132,7 @@ export default function Register() {
                   label="Confirmar"
                   placeholder="••••••"
                   secureTextEntry
-                  iconName="lock-outline"
+                  iconName="vpn-key"
                   value={formData.confirmar}
                   onChangeText={(text) =>
                     setFormData({ ...formData, confirmar: text })

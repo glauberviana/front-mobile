@@ -9,7 +9,7 @@ import { styles } from "./styles";
 // 1. Adicione o isLoading na interface
 interface ButtonProps extends TouchableOpacityProps {
   title: string;
-  isLoading?: boolean; // O '?' indica que é opcional
+  isLoading: boolean;
 }
 
 // 2. Receba o isLoading aqui nos parâmetros
