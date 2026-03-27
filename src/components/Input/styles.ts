@@ -19,6 +19,7 @@ export default StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 12,
     height: 50,
+    width: "100%",
   },
 
   icon: {
@@ -31,6 +32,7 @@ export default StyleSheet.create({
 
   input: {
     flex: 1,
+    minWidth: 0,
     fontSize: 16,
     color: "#000000",
 
