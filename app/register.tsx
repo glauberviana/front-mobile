@@ -1,3 +1,4 @@
+// Importações de navegação, UI e utilitários
 import { Link, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
@@ -16,7 +17,7 @@ import { COLORS } from "../src/utils/theme";
 import { validateRegisterForm } from "../src/utils/validators";
 
 export default function Register() {
-  //ESTADOS (States)
+  // Armazena os dados do formulário de cadastro
   const [formData, setFormData] = useState({
     nome: "",
     email: "",
@@ -25,13 +26,17 @@ export default function Register() {
     confirmar: "",
   });
 
+  // Armazena mensagens de erro de validação por campo
   const [errors, setErrors] = useState<any>({});
+
+  // Controla estado de carregamento do botão
   const [loading, setLoading] = useState(false);
 
-  //FUNÇÃO DE CADASTRO
+  // Função responsável por validar e simular o envio do cadastro
   const handleRegister = async () => {
     const validationErrors = validateRegisterForm(formData);
 
+    // Se houver erros, interrompe o fluxo e exibe mensagens
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
@@ -40,12 +45,14 @@ export default function Register() {
     setErrors({});
     setLoading(true);
 
-    // Simulação de chamada de API
+    // Simulação de chamada para API
     setTimeout(() => {
       setLoading(false);
       alert("Conta criada com sucesso!");
     }, 2000);
   };
+
+  // Aplica máscara de telefone no formato (XX) XXXXX-XXXX
   const formatPhone = (value: string) => {
     const numbers = value.replace(/\D/g, "");
 
@@ -55,18 +62,21 @@ export default function Register() {
       return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
     }
 
-    return `(${numbers.slice(0, 2)})${numbers.slice(2, 7)} - ${numbers.slice(7, 11)}`;
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
   };
-  //RENDERIZAÇÃO
+
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: COLORS.background }]}
     >
+      {/* Remove header padrão da navegação */}
       <Stack.Screen options={{ headerShown: false }} />
+
       <StatusBar style="light" />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.card}>
+          {/* Logo do app */}
           <View style={styles.header}>
             <Image
               source={require("../assets/images/logoImg.png")}
@@ -75,12 +85,15 @@ export default function Register() {
             />
           </View>
 
+          {/* Título e subtítulo */}
           <Text style={styles.title}>Criar Conta</Text>
           <Text style={styles.subtitle}>
             Comece a organizar suas tarefas agora
           </Text>
 
+          {/* Formulário */}
           <View style={styles.form}>
+            {/* Nome */}
             <Input
               label="Nome"
               iconName="person"
@@ -90,6 +103,7 @@ export default function Register() {
               error={errors.nome}
             />
 
+            {/* Email */}
             <Input
               label="Email"
               iconName="email"
@@ -101,6 +115,7 @@ export default function Register() {
               error={errors.email}
             />
 
+            {/* Contato com máscara */}
             <Input
               label="Contato"
               iconName="phone"
@@ -108,11 +123,15 @@ export default function Register() {
               keyboardType="phone-pad"
               value={formData.contato}
               onChangeText={(text) =>
-                setFormData({ ...formData, contato: formatPhone(text) })
+                setFormData({
+                  ...formData,
+                  contato: formatPhone(text),
+                })
               }
               error={errors.contato}
             />
 
+            {/* Senha e confirmação lado a lado */}
             <View style={styles.row}>
               <View style={{ flex: 1, marginRight: 8 }}>
                 <Input
@@ -127,6 +146,7 @@ export default function Register() {
                   error={errors.senha}
                 />
               </View>
+
               <View style={{ flex: 1 }}>
                 <Input
                   label="Confirmar"
@@ -143,12 +163,14 @@ export default function Register() {
             </View>
           </View>
 
+          {/* Botão de cadastro */}
           <Button
             title="Cadastrar"
             onPress={handleRegister}
             isLoading={loading}
           />
 
+          {/* Link para login */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>Já tem uma conta? </Text>
             <Link href="/login" asChild>
@@ -165,7 +187,6 @@ export default function Register() {
   );
 }
 
-//ESTILOS
 const styles = StyleSheet.create({
   container: {
     flex: 1,

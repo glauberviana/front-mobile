@@ -6,21 +6,23 @@ import {
 } from "react-native";
 import { styles } from "./styles";
 
-// 1. Adicione o isLoading na interface
+// Interface que estende as props do TouchableOpacity,
+// permitindo reutilização do componente com flexibilidade
 interface ButtonProps extends TouchableOpacityProps {
   title: string;
   isLoading: boolean;
 }
 
-// 2. Receba o isLoading aqui nos parâmetros
 export default function Button({ title, isLoading, ...rest }: ButtonProps) {
   return (
     <TouchableOpacity
+      // Aplica estilos padrão + permite sobrescrita via props
       style={[rest.style, styles.button]}
-      disabled={isLoading} // Desabilita o clique se estiver carregando
+      // Desabilita o botão durante o carregamento para evitar múltiplos cliques
+      disabled={isLoading}
       {...rest}
     >
-      {/* 3. Se estiver carregando, mostra o spinner, senão mostra o texto */}
+      {/* Exibe um indicador de carregamento ou o texto do botão */}
       {isLoading ? (
         <ActivityIndicator color="#FFF" />
       ) : (
