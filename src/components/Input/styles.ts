@@ -1,4 +1,4 @@
-import { Platform, StyleSheet } from "react-native"; // Adicione o Platform aqui
+import { Platform, StyleSheet } from "react-native";
 
 export default StyleSheet.create({
   container: {
