@@ -1,3 +1,9 @@
+// Expressão regular para validar formato de e-mail
+const emailRegex = /\S+@\S+\.\S+/;
+
+/**
+ * Validação para o formulário de Cadastro
+ */
 export const validateRegisterForm = (formData: any) => {
   let errors: any = {};
 
@@ -7,7 +13,6 @@ export const validateRegisterForm = (formData: any) => {
   }
 
   // Validar E-mail
-  const emailRegex = /\S+@\S+\.\S+/;
   if (!formData.email) {
     errors.email = "E-mail é obrigatório";
   } else if (!emailRegex.test(formData.email)) {
@@ -31,6 +36,27 @@ export const validateRegisterForm = (formData: any) => {
     errors.confirmar = "Confirme sua senha";
   } else if (formData.senha !== formData.confirmar) {
     errors.confirmar = "As senhas não coincidem";
+  }
+
+  return errors;
+};
+
+/**
+ * Validação para o formulário de Login 
+ */
+export const validateLoginForm = (formData: any) => {
+  let errors: any = {};
+
+  // Validar E-mail
+  if (!formData.email) {
+    errors.email = "E-mail é obrigatório";
+  } else if (!emailRegex.test(formData.email)) {
+    errors.email = "E-mail inválido";
+  }
+
+  // Validar Senha
+  if (!formData.senha) {
+    errors.senha = "Senha é obrigatória";
   }
 
   return errors;
