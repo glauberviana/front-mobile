@@ -1,3 +1,4 @@
+import { MaterialIcons } from "@expo/vector-icons";
 import { Link, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
@@ -21,15 +22,28 @@ export default function Login() {
   const [errors, setErrors] = useState<any>({});
   const [loading, setLoading] = useState(false);
 
+  // Estado para controlar o "Lembrar de mim"
+  const [rememberMe, setRememberMe] = useState(false);
+
   const handleLogin = async () => {
     const validationErrors = validateLoginForm(formData);
+    
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
+
     setErrors({});
     setLoading(true);
-    setTimeout(() => setLoading(false), 2000);
+
+    // Simulação de log
+    console.log("Login tentado. Lembrar usuário?", rememberMe);
+
+    setTimeout(() => {
+      setLoading(false);
+      // Por enquanto, apenas um log, a navegação faremos depois!
+      console.log("Sucesso na simulação de login");
+    }, 2000);
   };
 
   return (
@@ -43,11 +57,10 @@ export default function Login() {
         contentContainerStyle={styles.scrollContent} 
         bounces={false}
       >
-        {/* Espaçamento superior para a logo respirar */}
         <View style={styles.topSpace} />
 
         <View style={styles.card}>
-          {/* Logo Centralizada no topo do card esticado */}
+          {/* Logo Centralizada no topo do card */}
           <View style={styles.logoWrapper}>
             <Image 
               source={require("../assets/images/logoImg.png")} 
@@ -79,13 +92,29 @@ export default function Login() {
               error={errors.senha}
             />
 
-            <Link href="/forgot-password" asChild>
-              <TouchableOpacity style={styles.forgotPass}>
-                <Text style={StyleSheet.flatten([styles.linkText, { color: COLORS.primary, textAlign: 'right' }])}>
-                  Esqueci minha senha
-                </Text>
+            {/* Linha de Ações: Checkbox e Esqueci Senha */}
+            <View style={styles.actionsRow}>
+              <TouchableOpacity 
+                style={styles.rememberMeContainer}
+                onPress={() => setRememberMe(!rememberMe)}
+                activeOpacity={0.7}
+              >
+                <MaterialIcons 
+                  name={rememberMe ? "check-box" : "check-box-outline-blank"} 
+                  size={22} 
+                  color={rememberMe ? COLORS.primary : "#9ca3af"} 
+                />
+                <Text style={styles.rememberMeText}>Lembrar de mim</Text>
               </TouchableOpacity>
-            </Link>
+
+              <Link href="/forgot-password" asChild>
+                <TouchableOpacity style={styles.forgotPass}>
+                  <Text style={StyleSheet.flatten([styles.linkText, { color: COLORS.primary, textAlign: 'right' }])}>
+                    Esqueci minha senha
+                  </Text>
+                </TouchableOpacity>
+              </Link>
+            </View>
           </View>
 
           <Button title="Entrar" onPress={handleLogin} isLoading={loading} />
@@ -123,7 +152,7 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
   topSpace: {
-    height: 60, // Espaço entre o topo da tela e o card
+    height: 60,
   },
   card: { 
     backgroundColor: "#fff", 
@@ -151,20 +180,35 @@ const styles = StyleSheet.create({
   subtitle: { 
     fontSize: 15, 
     color: "#6b7280", 
-    marginBottom: 32, 
+    marginBottom: 24, 
     marginTop: 6 
   },
   form: { 
-    gap: 12, 
+    gap: 10, 
     marginBottom: 24 
   },
+  actionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 5,
+  },
+  rememberMeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  rememberMeText: {
+    fontSize: 14,
+    color: "#4b5563",
+    fontWeight: "500",
+  },
   forgotPass: { 
-    alignSelf: 'flex-end', 
     paddingVertical: 8 
   },
   linkText: { 
     fontWeight: "bold", 
-    fontSize: 15 
+    fontSize: 14 
   },
   dividerContainer: { 
     flexDirection: 'row', 
