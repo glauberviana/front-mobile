@@ -1,6 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
+  StyleSheet,
   Text,
   TextInput,
   TextInputProps,
@@ -9,8 +10,7 @@ import {
 } from "react-native";
 import styles from "./styles";
 
-// Extende as propriedades nativas do TextInput para permitir reutilização
-// e adiciona props customizadas para label, erro e ícone
+// Extende as propriedades nativas do TextInput
 interface Props extends TextInputProps {
   label?: string;
   error?: string;
@@ -18,10 +18,7 @@ interface Props extends TextInputProps {
 }
 
 export default function Input({ label, error, iconName, ...rest }: Props) {
-  // Controla o estado de foco para alterar o estilo visual do input
   const [isFocused, setIsFocused] = useState(false);
-
-  // Controla a visibilidade da senha (mostrar/ocultar)
   const [showPassword, setShowPassword] = useState(false);
 
   // Verifica se o input é do tipo senha
@@ -29,21 +26,18 @@ export default function Input({ label, error, iconName, ...rest }: Props) {
 
   return (
     <View style={styles.container}>
-      {/* Renderiza o label acima do campo, se existir */}
+      {/* Label acima do campo */}
       {label && <Text style={styles.label}>{label}</Text>}
 
       <View
-        style={[
+        // O StyleSheet.flatten resolve o erro "CSSStyleDeclaration" no navegador
+        style={StyleSheet.flatten([
           styles.inputContainer,
-
-          // Estilo aplicado quando o input está focado
           isFocused && { borderColor: "#3B6EDC", borderWidth: 2 },
-
-          // Estilo aplicado quando há erro de validação
           error && { borderColor: "#ef4444", borderWidth: 2 },
-        ]}
+        ])}
       >
-        {/* Ícone exibido à esquerda do input */}
+        {/* Ícone à esquerda */}
         {iconName && (
           <MaterialIcons
             name={iconName}
@@ -56,18 +50,16 @@ export default function Input({ label, error, iconName, ...rest }: Props) {
         {/* Campo de entrada principal */}
         <TextInput
           style={styles.input}
-          // Alterna visibilidade da senha
-          secureTextEntry={isPassword && !showPassword}
           placeholderTextColor="#9ca3af"
-          // Atualiza estado de foco
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          // Remove underline padrão do Android
           underlineColorAndroid="transparent"
           {...rest}
+          // Lógica para alternar visibilidade da senha
+          secureTextEntry={isPassword && !showPassword}
         />
 
-        {/* Ícone para mostrar/ocultar senha */}
+        {/* Ícone do Olhinho (apenas se for senha) */}
         {isPassword && (
           <TouchableOpacity
             onPress={() => setShowPassword(!showPassword)}
@@ -82,7 +74,7 @@ export default function Input({ label, error, iconName, ...rest }: Props) {
         )}
       </View>
 
-      {/* Mensagem de erro exibida abaixo do input */}
+      {/* Mensagem de erro */}
       {error && <Text style={styles.errorText}>{error}</Text>}
     </View>
   );
