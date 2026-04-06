@@ -1,5 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { Link, Stack } from "expo-router";
+import { Link, Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
@@ -25,9 +25,13 @@ export default function Login() {
   // Estado para controlar o "Lembrar de mim"
   const [rememberMe, setRememberMe] = useState(false);
 
+  const router = useRouter();
+
   const handleLogin = async () => {
+    if (loading) return;
+
     const validationErrors = validateLoginForm(formData);
-    
+
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
@@ -36,41 +40,39 @@ export default function Login() {
     setErrors({});
     setLoading(true);
 
-    // Simulação de log
-    console.log("Login tentado. Lembrar usuário?", rememberMe);
-
     setTimeout(() => {
       setLoading(false);
-      // Por enquanto, apenas um log, a navegação faremos depois!
-      console.log("Sucesso na simulação de login");
+
+      router.replace("/home"); // 👈 AQUI acontece o redirecionamento
     }, 2000);
   };
-
   return (
-    <SafeAreaView 
-      style={StyleSheet.flatten([styles.container, { backgroundColor: COLORS.primary || "#3B6EDC" }])}
+    <SafeAreaView
+      style={StyleSheet.flatten([
+        styles.container,
+        { backgroundColor: COLORS.primary || "#3B6EDC" },
+      ])}
     >
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="light" />
 
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent} 
-        bounces={false}
-      >
+      <ScrollView contentContainerStyle={styles.scrollContent} bounces={false}>
         <View style={styles.topSpace} />
 
         <View style={styles.card}>
           {/* Logo Centralizada no topo do card */}
           <View style={styles.logoWrapper}>
-            <Image 
-              source={require("../assets/images/logoImg.png")} 
+            <Image
+              source={require("../assets/images/logoImg.png")}
               style={styles.logoCard}
               resizeMode="contain"
             />
           </View>
 
           <Text style={styles.title}>Bem-vindo de volta</Text>
-          <Text style={styles.subtitle}>Entre com suas credenciais para acessar o sistema</Text>
+          <Text style={styles.subtitle}>
+            Entre com suas credenciais para acessar o sistema
+          </Text>
 
           <View style={styles.form}>
             <Input
@@ -86,7 +88,7 @@ export default function Login() {
               label="Senha"
               placeholder="••••••"
               iconName="vpn-key"
-              secureTextEntry={true} 
+              secureTextEntry={true}
               value={formData.senha}
               onChangeText={(text) => setFormData({ ...formData, senha: text })}
               error={errors.senha}
@@ -94,22 +96,27 @@ export default function Login() {
 
             {/* Linha de Ações: Checkbox e Esqueci Senha */}
             <View style={styles.actionsRow}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.rememberMeContainer}
                 onPress={() => setRememberMe(!rememberMe)}
                 activeOpacity={0.7}
               >
-                <MaterialIcons 
-                  name={rememberMe ? "check-box" : "check-box-outline-blank"} 
-                  size={22} 
-                  color={rememberMe ? COLORS.primary : "#9ca3af"} 
+                <MaterialIcons
+                  name={rememberMe ? "check-box" : "check-box-outline-blank"}
+                  size={22}
+                  color={rememberMe ? COLORS.primary : "#9ca3af"}
                 />
                 <Text style={styles.rememberMeText}>Lembrar de mim</Text>
               </TouchableOpacity>
 
               <Link href="/forgot-password" asChild>
                 <TouchableOpacity style={styles.forgotPass}>
-                  <Text style={StyleSheet.flatten([styles.linkText, { color: COLORS.primary, textAlign: 'right' }])}>
+                  <Text
+                    style={StyleSheet.flatten([
+                      styles.linkText,
+                      { color: COLORS.primary, textAlign: "right" },
+                    ])}
+                  >
                     Esqueci minha senha
                   </Text>
                 </TouchableOpacity>
@@ -129,7 +136,12 @@ export default function Login() {
             <Text style={styles.footerText}>Não tem conta? </Text>
             <Link href="/register" asChild>
               <TouchableOpacity>
-                <Text style={StyleSheet.flatten([styles.linkText, { color: COLORS.primary }])}>
+                <Text
+                  style={StyleSheet.flatten([
+                    styles.linkText,
+                    { color: COLORS.primary },
+                  ])}
+                >
                   Criar conta
                 </Text>
               </TouchableOpacity>
@@ -142,8 +154,8 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1 
+  container: {
+    flex: 1,
   },
   scrollContent: {
     flexGrow: 1,
@@ -154,8 +166,8 @@ const styles = StyleSheet.create({
   topSpace: {
     height: 60,
   },
-  card: { 
-    backgroundColor: "#fff", 
+  card: {
+    backgroundColor: "#fff",
     borderRadius: 24,
     padding: 24,
     elevation: 4,
@@ -165,37 +177,37 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
   },
   logoWrapper: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 30,
   },
   logoCard: {
-    width: 200, 
+    width: 200,
     height: 60,
   },
-  title: { 
-    fontSize: 22, 
-    fontWeight: "bold", 
-    color: "#111827" 
+  title: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#111827",
   },
-  subtitle: { 
-    fontSize: 15, 
-    color: "#6b7280", 
-    marginBottom: 24, 
-    marginTop: 6 
+  subtitle: {
+    fontSize: 15,
+    color: "#6b7280",
+    marginBottom: 24,
+    marginTop: 6,
   },
-  form: { 
-    gap: 10, 
-    marginBottom: 24 
+  form: {
+    gap: 10,
+    marginBottom: 24,
   },
   actionsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginTop: 5,
   },
   rememberMeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
   },
   rememberMeText: {
@@ -203,35 +215,35 @@ const styles = StyleSheet.create({
     color: "#4b5563",
     fontWeight: "500",
   },
-  forgotPass: { 
-    paddingVertical: 8 
+  forgotPass: {
+    paddingVertical: 8,
   },
-  linkText: { 
-    fontWeight: "bold", 
-    fontSize: 14 
+  linkText: {
+    fontWeight: "bold",
+    fontSize: 14,
   },
-  dividerContainer: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    marginVertical: 25 
+  dividerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 25,
   },
-  line: { 
-    flex: 1, 
-    height: 1, 
-    backgroundColor: '#e5e7eb' 
+  line: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#e5e7eb",
   },
-  dividerText: { 
-    marginHorizontal: 12, 
-    color: '#9ca3af', 
-    fontSize: 14 
+  dividerText: {
+    marginHorizontal: 12,
+    color: "#9ca3af",
+    fontSize: 14,
   },
-  footer: { 
-    flexDirection: "row", 
-    justifyContent: "center", 
-    marginTop: 10 
+  footer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 10,
   },
-  footerText: { 
-    color: "#6b7280", 
-    fontSize: 16 
+  footerText: {
+    color: "#6b7280",
+    fontSize: 16,
   },
 });
