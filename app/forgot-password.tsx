@@ -2,13 +2,13 @@ import { Link, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
-    Image,
-    SafeAreaView,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 import Button from "../src/components/Button";
@@ -21,33 +21,44 @@ export default function ForgotPassword() {
   const [error, setError] = useState("");
 
   const handleRecover = async () => {
+    // Regex "Padrão Ouro": exige pelo menos 2 letras após o último ponto
+    // Isso evita que 'gmail.co' passe se o usuário esqueceu o 'm'
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+
     if (!email) {
       setError("Informe seu email");
+      return;
+    } 
+    
+    if (!emailRegex.test(email)) {
+      setError("Informe um e-mail válido (ex: usuario@email.com)");
       return;
     }
 
     setError("");
     setLoading(true);
 
-    // Simulação (igual seus colegas fizeram)
+    // Simulação de envio de link de recuperação
     setTimeout(() => {
       setLoading(false);
-      alert("Link de recuperação enviado para seu email!");
+      alert("Link de recuperação enviado para seu e-mail!");
     }, 2000);
   };
 
   return (
     <SafeAreaView
-      style={[styles.container, { backgroundColor: COLORS.primary }]}
+      // O flatten resolve o erro de 'CSSStyleDeclaration' no navegador
+      style={StyleSheet.flatten([styles.container, { backgroundColor: COLORS.primary || "#3B6EDC" }])}
     >
       <Stack.Screen options={{ headerShown: false }} />
       <StatusBar style="light" />
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={styles.scrollContent} bounces={false}>
+        {/* Espaçamento para o topo azul */}
         <View style={styles.topSpace} />
 
         <View style={styles.card}>
-          {/* Logo */}
+          {/* Logo Centralizada no Card */}
           <View style={styles.logoWrapper}>
             <Image
               source={require("../assets/images/logoImg.png")}
@@ -56,42 +67,37 @@ export default function ForgotPassword() {
             />
           </View>
 
-          {/* Título */}
           <Text style={styles.title}>Recuperar senha</Text>
           <Text style={styles.subtitle}>
-            Informe seu email para receber o link de recuperação
+            Informe seu e-mail cadastrado para receber as instruções de recuperação.
           </Text>
 
-          {/* Input */}
           <View style={styles.form}>
             <Input
-              label="Email"
+              label="E-mail"
               iconName="email"
               placeholder="seuemail@email.com"
               value={email}
               onChangeText={setEmail}
               error={error}
+              // Melhora a experiência no mobile
+              keyboardType="email-address"
+              autoCapitalize="none"
             />
           </View>
 
-          {/* Botão */}
           <Button
             title="Enviar link"
             onPress={handleRecover}
             isLoading={loading}
           />
 
-          {/* Voltar pro login */}
+          {/* Rodapé para voltar ao login */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>Lembrou sua senha? </Text>
             <Link href="/login" asChild>
               <TouchableOpacity>
-                <Text
-                  style={[
-                    styles.linkText,
-                    { color: COLORS.primary },
-                  ]}
-                >
+                <Text style={StyleSheet.flatten([styles.linkText, { color: COLORS.primary }])}>
                   Fazer login
                 </Text>
               </TouchableOpacity>
@@ -110,7 +116,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: "center",
-    padding: 20,
     paddingBottom: 40,
   },
   topSpace: {
@@ -118,13 +123,18 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: "#fff",
-    borderRadius: 24,
-    padding: 24,
-    elevation: 4,
+    borderRadius: 32, // Padronizado com Login/Register
+    padding: 28,
+    // Sombras para Mobile
+    elevation: 8,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 10,
+    // Ajustes de equilíbrio para Telas Grandes (Web/Tablet)
+    maxWidth: 500,
+    alignSelf: 'center',
+    width: '90%', // Garante margem em telas pequenas
   },
   logoWrapper: {
     alignItems: "center",
@@ -135,14 +145,14 @@ const styles = StyleSheet.create({
     height: 60,
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "bold",
     color: "#111827",
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 15,
     color: "#6b7280",
-    marginBottom: 24,
+    marginBottom: 28,
     marginTop: 6,
   },
   form: {
@@ -155,8 +165,10 @@ const styles = StyleSheet.create({
   },
   footerText: {
     color: "#6b7280",
+    fontSize: 15,
   },
   linkText: {
     fontWeight: "bold",
+    fontSize: 15,
   },
 });
