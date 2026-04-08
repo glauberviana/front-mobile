@@ -48,24 +48,21 @@ export default function CategoryFilter({
 
 const styles = StyleSheet.create({
   wrapper: {
-    paddingTop: 60,
-    paddingBottom: 8,
+    paddingVertical: 8,
   },
 
   container: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 14,
-    justifyContent: "flex-start",
-
     gap: 10,
   },
 
   button: {
-    backgroundColor: "#BFD2F6",
+    backgroundColor: "#E5E7EB",
     paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
   },
 
   activeButton: {
@@ -73,11 +70,13 @@ const styles = StyleSheet.create({
   },
 
   text: {
-    fontSize: 12,
+    fontSize: 13,
     color: "#6B7280",
+    fontWeight: "500",
   },
 
   activeText: {
     color: "#fff",
+    fontWeight: "600",
   },
 });
