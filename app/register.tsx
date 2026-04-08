@@ -1,5 +1,5 @@
 // Importações de navegação, UI e utilitários
-import { Link, Stack } from "expo-router";
+import { Link, Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
@@ -17,6 +17,7 @@ import { COLORS } from "../src/utils/theme";
 import { validateRegisterForm } from "../src/utils/validators";
 
 export default function Register() {
+  const router = useRouter();
   // Armazena os dados do formulário de cadastro
   const [formData, setFormData] = useState({
     nome: "",
@@ -48,7 +49,7 @@ export default function Register() {
     // Simulação de chamada para API
     setTimeout(() => {
       setLoading(false);
-      alert("Conta criada com sucesso!");
+      router.replace("/home");
     }, 2000);
   };
 
