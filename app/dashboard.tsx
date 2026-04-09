@@ -44,11 +44,11 @@ export default function Dashboard() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>UN</Text>
+          <MaterialIcons name="person-outline" size={24} color="#5EA5E8" />
         </View>
         <View style={styles.userInfo}>
           <Text style={styles.greeting}>Bem-vindo de volta</Text>
-          <Text style={styles.userName}>Usuario novo</Text>
+          <Text style={styles.userName}>Nayelly Roberta</Text>
         </View>
         <TouchableOpacity>
           <MaterialIcons name="edit" size={20} color="#6B7280" />
@@ -206,9 +206,7 @@ function TaskSection({ title, tasks }: { title: string; tasks: string[] }) {
   return (
     <View style={styles.taskCard}>
       <View style={styles.taskHeader}>
-        <View style={styles.taskBadge}>
-          <Text style={styles.taskBadgeText}>29</Text>
-        </View>
+        <MaterialIcons name="calendar-today" size={16} color="#5EA5E8" />
         <Text style={styles.taskTitle}>{title}</Text>
       </View>
       {tasks.map((t, i) => (
@@ -240,7 +238,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  avatarText: { fontSize: 14, fontWeight: "500", color: "#185FA5" },
   userInfo: { flex: 1, marginLeft: 10 },
   greeting: { fontSize: 11, color: "#6B7280" },
   userName: { fontSize: 14, fontWeight: "500", color: "#1F2937" },
