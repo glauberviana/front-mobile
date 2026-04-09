@@ -291,24 +291,69 @@ export default function CalendarScreen() {
       </View>
 
       {/* Navegação Inferior */}
-      <View style={[styles.bottomBar, { paddingBottom: insets.bottom }]}>
+      <View
+        style={[
+          styles.bottomBar,
+          {
+            paddingBottom: insets.bottom,
+            minHeight: bottomBarHeight,
+          },
+        ]}
+      >
         <TouchableOpacity
           style={styles.bottomItem}
-          onPress={() => router.push("/home" as any)}
+          activeOpacity={0.8}
+          // onPress={() => router.push("/create")}
         >
-          <MaterialIcons
-            name="list"
-            size={26}
-            color={pathname === "/home" ? "#5EA5E8" : "#9CA3AF"}
-          />
+          {pathname === "/create" ? (
+            <View style={styles.activeCircle}>
+              <MaterialIcons name="add" size={24} color="#fff" />
+            </View>
+          ) : (
+            <MaterialIcons name="add" size={24} color="#5EA5E8" />
+          )}
         </TouchableOpacity>
-        <TouchableOpacity style={styles.bottomItem}>
-          <View style={styles.activeIndicator}>
-            <MaterialIcons name="calendar-today" size={24} color="#5EA5E8" />
-          </View>
+
+        <TouchableOpacity
+          style={styles.bottomItem}
+          activeOpacity={0.8}
+          onPress={() => router.push("/home")}
+        >
+          {pathname === "/home" ? (
+            <View style={styles.activeCircle}>
+              <MaterialIcons name="list" size={22} color="#fff" />
+            </View>
+          ) : (
+            <MaterialIcons name="list" size={22} color="#5EA5E8" />
+          )}
         </TouchableOpacity>
-        <TouchableOpacity style={styles.bottomItem}>
-          <MaterialIcons name="person-outline" size={26} color="#9CA3AF" />
+
+        <TouchableOpacity
+          style={styles.bottomItem}
+          activeOpacity={0.8}
+          onPress={() => router.push("/calendar")}
+        >
+          {pathname === "/calendar" ? (
+            <View style={styles.activeCircle}>
+              <MaterialIcons name="calendar-today" size={22} color="#fff" />
+            </View>
+          ) : (
+            <MaterialIcons name="calendar-today" size={22} color="#5EA5E8" />
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.bottomItem}
+          activeOpacity={0.8}
+          //onPress={() => router.push("/dashboard")}
+        >
+          {pathname === "/dashboard" ? (
+            <View style={styles.activeCircle}>
+              <MaterialIcons name="person-outline" size={24} color="#fff" />
+            </View>
+          ) : (
+            <MaterialIcons name="person-outline" size={24} color="#5EA5E8" />
+          )}
         </TouchableOpacity>
       </View>
 
@@ -411,5 +456,13 @@ const styles = StyleSheet.create({
     paddingBottom: 4,
     borderBottomWidth: 2,
     borderBottomColor: "#5EA5E8",
+  },
+  activeCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#5EA5E8",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
