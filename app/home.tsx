@@ -16,20 +16,18 @@ import {
 import CategoryFilter from "@/src/components/CategoryFilter";
 import TaskCard from "@/src/components/TaskCard";
 
-const categories = [
-  "Todos",
-  "Trabalhos",
-  "Pessoal",
-  "Dia a dia",
-  "Teste",
-  "Outro",
-];
+// IMPORTANTE: Importe o novo componente aqui
+import CreateTaskModal from "@/src/components/CreateTaskModal";
 
+const categories = ["Todos", "Trabalhos", "Pessoal", "Dia a dia", "Teste", "Outro"];
 const tasks: { id: string; title: string; category: string }[] = [];
 
 export default function Home() {
   const insets = useSafeAreaInsets();
   const [selectedCategory, setSelectedCategory] = useState("Todos");
+  
+  // ESTADO PARA ABRIR O MODAL
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   const filteredTasks = useMemo(() => {
     if (selectedCategory === "Todos") return tasks;
@@ -76,9 +74,11 @@ export default function Home() {
           )}
         </View>
 
+        {/* FAB: Agora altera o estado para true */}
         <TouchableOpacity
           style={[styles.fab, { bottom: fabBottom }]}
           activeOpacity={0.85}
+          onPress={() => setShowCreateModal(true)}
         >
           <MaterialIcons name="add" size={30} color="#fff" />
         </TouchableOpacity>
@@ -92,7 +92,8 @@ export default function Home() {
             },
           ]}
         >
-          <TouchableOpacity style={styles.bottomItem} activeOpacity={0.8}>
+          {/* Botão + da Navbar inferior também abre o modal */}
+          <TouchableOpacity style={styles.bottomItem} activeOpacity={0.8} onPress={() => setShowCreateModal(true)}>
             <MaterialIcons name="add" size={24} color="#5EA5E8" />
           </TouchableOpacity>
 
@@ -111,54 +112,54 @@ export default function Home() {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* INSERINDO O COMPONENTE DO MODAL AQUI */}
+      <CreateTaskModal 
+        visible={showCreateModal} 
+        onClose={() => setShowCreateModal(false)} 
+      />
+      
     </SafeAreaView>
   );
 }
 
+// ... SEUS ESTILOS ORIGINAIS DA HOME CONTINUAM AQUI INTACTOS
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "#F3F4F6",
   },
-
   container: {
     flex: 1,
     backgroundColor: "#F3F4F6",
   },
-
   categoriesWrapper: {
     paddingTop: 8,
     paddingBottom: 8,
   },
-
   content: {
     flex: 1,
   },
-
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
   },
-
   emptyImage: {
     width: 170,
     height: 170,
   },
-
   emptyText: {
     marginTop: 12,
     fontSize: 14,
     color: "#6B7280",
     textAlign: "center",
   },
-
   listContent: {
     paddingHorizontal: 14,
     paddingTop: 8,
   },
-
   fab: {
     position: "absolute",
     right: 18,
@@ -174,7 +175,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.18,
     shadowRadius: 4,
   },
-
   bottomBar: {
     backgroundColor: "#F8F8F8",
     borderTopWidth: 1,
@@ -184,13 +184,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 8,
   },
-
   bottomItem: {
     width: 50,
     alignItems: "center",
     justifyContent: "center",
   },
-
   activeCircle: {
     width: 36,
     height: 36,
