@@ -8,13 +8,56 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { BarChart } from "react-native-gifted-charts";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
-const DAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-const BAR_DATA = [6, 4, 4, 4, 6.5, 1, 3]; // barras do gráfico
-const MAX_BAR = 8;
+
+const barData = [
+  {
+    value: 6,
+    label: "Dom",
+    frontColor: "#5EA5E8",
+    topLabelComponent: () => <Text style={styles.barTopLabel}>6</Text>,
+  },
+  {
+    value: 4,
+    label: "Seg",
+    frontColor: "#5EA5E8",
+    topLabelComponent: () => <Text style={styles.barTopLabel}>4</Text>,
+  },
+  {
+    value: 4,
+    label: "Ter",
+    frontColor: "#5EA5E8",
+    topLabelComponent: () => <Text style={styles.barTopLabel}>4</Text>,
+  },
+  {
+    value: 4,
+    label: "Qua",
+    frontColor: "#5EA5E8",
+    topLabelComponent: () => <Text style={styles.barTopLabel}>4</Text>,
+  },
+  {
+    value: 6.5,
+    label: "Qui",
+    frontColor: "#5EA5E8",
+    topLabelComponent: () => <Text style={styles.barTopLabel}>6</Text>,
+  },
+  {
+    value: 1,
+    label: "Sex",
+    frontColor: "#F5C17A",
+    topLabelComponent: () => <Text style={styles.barTopLabel}>1</Text>,
+  },
+  {
+    value: 3,
+    label: "Sáb",
+    frontColor: "#A8D5A2",
+    topLabelComponent: () => <Text style={styles.barTopLabel}>3</Text>,
+  },
+];
 
 const overdueTasks = [
   "Revisar relatório mensal",
@@ -30,12 +73,9 @@ const upcomingTasks = [
   "Atualizar documentação",
 ];
 
-const BAR_MAX_HEIGHT = 80;
-
 export default function Dashboard() {
   const router = useRouter();
   const pathname = usePathname();
-
   const insets = useSafeAreaInsets();
   const bottomBarHeight = 60 + insets.bottom;
 
@@ -78,7 +118,7 @@ export default function Dashboard() {
           </View>
         </View>
 
-        {/* Gráfico de barras */}
+        {/* Gráfico de barras com Gifted Charts */}
         <View style={styles.chartCard}>
           <View style={styles.chartHeader}>
             <Text style={styles.chartTitle}>Conclusão de tarefas diária</Text>
@@ -93,31 +133,31 @@ export default function Dashboard() {
             </View>
           </View>
 
-          <View style={styles.chartBody}>
-            {/* Labels Y */}
-            <View style={styles.yLabels}>
-              {[MAX_BAR, MAX_BAR / 2, 0].map((v) => (
-                <Text key={v} style={styles.yLabel}>
-                  {v}
-                </Text>
-              ))}
-            </View>
-
-            {/* Barras */}
-            <View style={styles.barsArea}>
-              {BAR_DATA.map((val, i) => (
-                <View key={i} style={styles.barWrap}>
-                  <View
-                    style={[
-                      styles.bar,
-                      { height: (val / MAX_BAR) * BAR_MAX_HEIGHT },
-                    ]}
-                  />
-                  <Text style={styles.barLabel}>{DAYS[i]}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
+          <BarChart
+            data={barData}
+            barWidth={32}
+            spacing={10}
+            roundedTop
+            roundedBottom={false}
+            xAxisThickness={0.5}
+            xAxisColor="#E5E7EB"
+            yAxisThickness={0}
+            yAxisTextStyle={styles.yAxisText}
+            xAxisLabelTextStyle={styles.xAxisText}
+            noOfSections={4}
+            maxValue={8}
+            isAnimated
+            animationDuration={600}
+            showGradient
+            gradientColor="#A8D5F5"
+            backgroundColor="transparent"
+            rulesColor="#F3F4F6"
+            rulesType="solid"
+            initialSpacing={8}
+            endSpacing={8}
+            labelWidth={36}
+            hideRules={false}
+          />
         </View>
 
         {/* Tarefas atrasadas */}
@@ -279,37 +319,22 @@ const styles = StyleSheet.create({
     borderWidth: 0.5,
     borderColor: "#E5E7EB",
     padding: 14,
+    overflow: "hidden",
   },
   chartHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 14,
+    marginBottom: 16,
   },
   chartTitle: { fontSize: 14, fontWeight: "500", color: "#4B5563" },
   chartNav: { flexDirection: "row", alignItems: "center", gap: 4 },
   chartNavText: { fontSize: 12, color: "#6B7280" },
-  chartBody: { flexDirection: "row", alignItems: "flex-end" },
-  yLabels: {
-    height: BAR_MAX_HEIGHT + 24,
-    justifyContent: "space-between",
-    marginRight: 8,
-    paddingBottom: 22,
-  },
-  yLabel: { fontSize: 11, color: "#6B7280", textAlign: "right" },
-  barsArea: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "flex-end",
-    height: BAR_MAX_HEIGHT + 24,
-    gap: 8,
-    borderBottomWidth: 0.5,
-    borderBottomColor: "#E5E7EB",
-    paddingBottom: 6,
-  },
-  barWrap: { flex: 1, alignItems: "center", justifyContent: "flex-end" },
-  bar: { width: "100%", borderRadius: 5, backgroundColor: "#5EA5E8" },
-  barLabel: { fontSize: 11, color: "#6B7280", marginTop: 8 },
+
+  // Labels do gráfico
+  yAxisText: { color: "#6B7280", fontSize: 11 },
+  xAxisText: { color: "#6B7280", fontSize: 11, marginTop: 4 },
+  barTopLabel: { fontSize: 10, color: "#6B7280", marginBottom: 2 },
 
   taskCard: {
     marginHorizontal: 18,
@@ -326,15 +351,6 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 10,
   },
-  taskBadge: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    backgroundColor: "#5EA5E8",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  taskBadgeText: { fontSize: 11, fontWeight: "600", color: "#fff" },
   taskTitle: { fontSize: 16, fontWeight: "600", color: "#1F2937" },
   taskItem: {
     flexDirection: "row",
