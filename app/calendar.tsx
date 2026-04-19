@@ -120,7 +120,6 @@ const calendarTheme: any = {
   },
   "stylesheet.calendar.main": {
     week: {
-      marginVertical: 2,
       flexDirection: "row",
       justifyContent: "space-around",
     },
@@ -179,7 +178,6 @@ export default function CalendarScreen() {
         >
           <View style={styles.headerOverlay} />
           <View style={{ height: Math.max(insets.top - 8, 0) }} />
-
           <View style={styles.calendarWrapper}>
             <Calendar
               current={visibleMonth}
