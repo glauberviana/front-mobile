@@ -19,43 +19,36 @@ const barData = [
     value: 6,
     label: "Dom",
     frontColor: "#5EA5E8",
-    topLabelComponent: () => <Text style={styles.barTopLabel}>6</Text>,
   },
   {
     value: 4,
     label: "Seg",
     frontColor: "#5EA5E8",
-    topLabelComponent: () => <Text style={styles.barTopLabel}>4</Text>,
   },
   {
     value: 4,
     label: "Ter",
     frontColor: "#5EA5E8",
-    topLabelComponent: () => <Text style={styles.barTopLabel}>4</Text>,
   },
   {
     value: 4,
     label: "Qua",
     frontColor: "#5EA5E8",
-    topLabelComponent: () => <Text style={styles.barTopLabel}>4</Text>,
   },
   {
     value: 6.5,
     label: "Qui",
     frontColor: "#5EA5E8",
-    topLabelComponent: () => <Text style={styles.barTopLabel}>6</Text>,
   },
   {
     value: 1,
     label: "Sex",
-    frontColor: "#F5C17A",
-    topLabelComponent: () => <Text style={styles.barTopLabel}>1</Text>,
+    frontColor: "#5EA5E8",
   },
   {
     value: 3,
     label: "Sáb",
-    frontColor: "#A8D5A2",
-    topLabelComponent: () => <Text style={styles.barTopLabel}>3</Text>,
+    frontColor: "#5EA5E8",
   },
 ];
 
@@ -126,7 +119,7 @@ export default function Dashboard() {
               <TouchableOpacity>
                 <MaterialIcons name="chevron-left" size={18} color="#6B7280" />
               </TouchableOpacity>
-              <Text style={styles.chartNavText}>28/3–1</Text>
+              <Text style={styles.chartNavText}>28/ 3–1</Text>
               <TouchableOpacity>
                 <MaterialIcons name="chevron-right" size={18} color="#6B7280" />
               </TouchableOpacity>
@@ -137,22 +130,15 @@ export default function Dashboard() {
             data={barData}
             barWidth={32}
             spacing={10}
-            roundedTop
-            roundedBottom={false}
             xAxisThickness={0.5}
-            xAxisColor="#E5E7EB"
             yAxisThickness={0}
             yAxisTextStyle={styles.yAxisText}
             xAxisLabelTextStyle={styles.xAxisText}
             noOfSections={4}
             maxValue={8}
-            isAnimated
-            animationDuration={600}
             showGradient
             gradientColor="#A8D5F5"
-            backgroundColor="transparent"
             rulesColor="#F3F4F6"
-            rulesType="solid"
             initialSpacing={8}
             endSpacing={8}
             labelWidth={36}
