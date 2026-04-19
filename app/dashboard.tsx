@@ -136,9 +136,6 @@ export default function Dashboard() {
             xAxisLabelTextStyle={styles.xAxisText}
             noOfSections={4}
             maxValue={8}
-            showGradient
-            gradientColor="#A8D5F5"
-            rulesColor="#F3F4F6"
             initialSpacing={8}
             endSpacing={8}
             labelWidth={36}
