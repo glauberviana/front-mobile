@@ -14,25 +14,37 @@ import {
 } from "react-native-safe-area-context";
 
 import CategoryFilter from "@/src/components/CategoryFilter";
+import CreateTaskModal from "@/src/components/CreateTaskModal";
 import TaskCard from "@/src/components/TaskCard";
 
-// IMPORTANTE: Importe o novo componente aqui
-import CreateTaskModal from "@/src/components/CreateTaskModal";
-
 const categories = ["Todos", "Trabalhos", "Pessoal", "Dia a dia", "Teste", "Outro"];
-const tasks: { id: string; title: string; category: string }[] = [];
 
 export default function Home() {
   const insets = useSafeAreaInsets();
   const [selectedCategory, setSelectedCategory] = useState("Todos");
-  
-  // ESTADO PARA ABRIR O MODAL
+  const [tasks, setTasks] = useState<{ id: string; title: string; category: string }[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<any>(null);
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
+
+  const handleSaveTask = (taskData: any) => {
+    if (modalMode === "edit" && selectedTask) {
+      setTasks(tasks.map(t => t.id === selectedTask.id ? { ...t, title: taskData.title, category: taskData.category } : t));
+    } else {
+      const newTask = {
+        id: Math.random().toString(),
+        title: taskData.title,
+        category: taskData.category === "Sem categoria" ? "Todos" : taskData.category,
+      };
+      setTasks([newTask, ...tasks]);
+    }
+    setShowCreateModal(false);
+  };
 
   const filteredTasks = useMemo(() => {
     if (selectedCategory === "Todos") return tasks;
     return tasks.filter((task) => task.category === selectedCategory);
-  }, [selectedCategory]);
+  }, [selectedCategory, tasks]); 
 
   const bottomBarHeight = 60 + insets.bottom;
   const fabBottom = bottomBarHeight + 16;
@@ -64,7 +76,15 @@ export default function Home() {
             <FlatList
               data={filteredTasks}
               keyExtractor={(item) => item.id}
-              renderItem={({ item }) => <TaskCard title={item.title} />}
+              renderItem={({ item }) => (
+                <TouchableOpacity onPress={() => {
+                  setSelectedTask(item);
+                  setModalMode("edit");
+                  setShowCreateModal(true);
+                }}>
+                  <TaskCard title={item.title} />
+                </TouchableOpacity>
+              )}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={[
                 styles.listContent,
@@ -74,11 +94,14 @@ export default function Home() {
           )}
         </View>
 
-        {/* FAB: Agora altera o estado para true */}
         <TouchableOpacity
           style={[styles.fab, { bottom: fabBottom }]}
           activeOpacity={0.85}
-          onPress={() => setShowCreateModal(true)}
+          onPress={() => {
+            setModalMode("create");
+            setSelectedTask(null);
+            setShowCreateModal(true);
+          }}
         >
           <MaterialIcons name="add" size={30} color="#fff" />
         </TouchableOpacity>
@@ -92,8 +115,7 @@ export default function Home() {
             },
           ]}
         >
-          {/* Botão + da Navbar inferior também abre o modal */}
-          <TouchableOpacity style={styles.bottomItem} activeOpacity={0.8} onPress={() => setShowCreateModal(true)}>
+          <TouchableOpacity style={styles.bottomItem} activeOpacity={0.8} onPress={() => { setModalMode("create"); setShowCreateModal(true); }}>
             <MaterialIcons name="add" size={24} color="#5EA5E8" />
           </TouchableOpacity>
 
@@ -113,17 +135,18 @@ export default function Home() {
         </View>
       </View>
 
-      {/* INSERINDO O COMPONENTE DO MODAL AQUI */}
       <CreateTaskModal 
         visible={showCreateModal} 
+        mode={modalMode}
+        initialData={selectedTask}
         onClose={() => setShowCreateModal(false)} 
+        onSaveTask={handleSaveTask}
       />
-      
     </SafeAreaView>
   );
 }
 
-// ... SEUS ESTILOS ORIGINAIS DA HOME CONTINUAM AQUI INTACTOS
+// CSS IGUAL AOS SEUS PRINTS
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
