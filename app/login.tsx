@@ -43,7 +43,7 @@ export default function Login() {
     setTimeout(() => {
       setLoading(false);
 
-      router.replace("/home"); // 👈 AQUI acontece o redirecionamento
+      router.replace("/home"); // AQUI acontece o redirecionamento
     }, 2000);
   };
   return (
