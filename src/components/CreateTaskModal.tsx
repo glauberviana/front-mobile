@@ -18,10 +18,24 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 const { width } = Dimensions.get("window");
 const COLUMN_WIDTH = (width * 0.9 - 48) / 7;
 
+interface CreateTaskModalProps {
+  visible: boolean;
+  onClose: () => void;
+  onSaveTask?: (data: any) => void;
+  onDeleteTask?: (id: string) => void;
+  mode?: "create" | "edit";
+  initialData?: any;
+}
+
+interface CreateCategoryModalProps {
+  visible: boolean;
+  onClose: () => void;
+  onCreate: (category: { name: string }) => void;
+}
+
 const PRIORITIES = ["Normal", "Alta", "Urgente", "Baixa"];
 const REMINDERS = ["Não", "10 min antes", "1 hora antes", "1 dia antes"];
 
-<<<<<<< HEAD
 const getPriorityColor = (priority: string) => {
   switch (priority) {
     case "Urgente": return "#ef4444";
@@ -30,20 +44,6 @@ const getPriorityColor = (priority: string) => {
     default: return "#9ca3af";
   }
 };
-
-// --- MODAL CATEGORIA ---
-function CreateCategoryModal({ visible, onClose, onCreate }: any) {
-  const [categoryName, setCategoryName] = useState("");
-  const handleCreateCategory = () => {
-    if (!categoryName.trim()) return;
-    onCreate({ name: categoryName.trim() });
-    setCategoryName("");
-=======
-interface CreateCategoryModalProps {
-  visible: boolean;
-  onClose: () => void;
-  onCreate: (category: { name: string }) => void;
-}
 
 function CreateCategoryModal({
   visible,
@@ -104,76 +104,30 @@ function CreateCategoryModal({
 export default function CreateTaskModal({
   visible,
   onClose,
-}: CreateTaskModalProps) {
-  const insets = useSafeAreaInsets();
-
-  const [taskTitle, setTaskTitle] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [showDateModal, setShowDateModal] = useState(false);
-  const [showRepeatModal, setShowRepeatModal] = useState(false);
-  const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("Sem categoria");
-
-  const handleCloseAll = () => {
-    setTaskTitle("");
-    setIsLoading(false);
-    setShowDateModal(false);
-    setShowRepeatModal(false);
-    setIsCategoryModalVisible(false);
-    setSelectedCategory("Sem categoria");
->>>>>>> a84cdfae8e071f99e687eb8d24b4d7a6886deea6
-    onClose();
-  };
-  return (
-    <Modal visible={visible} transparent animationType="fade">
-      <View style={styles.modalOverlayCenter}>
-        <View style={styles.centerCard}>
-          <Text style={styles.modalTitle}>Criar categoria</Text>
-          <TextInput
-            placeholder="Nome da categoria"
-            placeholderTextColor="#9ca3af"
-            value={categoryName}
-            onChangeText={setCategoryName}
-            style={styles.input}
-            autoFocus
-          />
-          <View style={styles.modalFooter}>
-            <TouchableOpacity onPress={onClose}><Text style={styles.cancelText}>Cancelar</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.confirmBtn} onPress={handleCreateCategory}>
-              <Text style={styles.confirmBtnText}>Criar</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
-}
-
-export default function CreateTaskModal({
-  visible,
-  onClose,
   onSaveTask,
   onDeleteTask,
   mode = "create",
   initialData,
-}: any) {
+}: CreateTaskModalProps) {
+  const insets = useSafeAreaInsets();
+  
   const today = useMemo(() => {
-    const d = new Date(2026, 3, 19); // 19 de Abril de 2026
+    const d = new Date(2026, 3, 19); 
     d.setHours(0, 0, 0, 0);
     return d;
   }, []);
 
   const [taskTitle, setTaskTitle] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("Sem categoria");
-  const [priorityIndex, setPriorityIndex] = useState(0);
-  const [reminderIndex, setReminderIndex] = useState(0);
-  const [repeatOption, setRepeatOption] = useState("Não");
-
   const [showDateModal, setShowDateModal] = useState(false);
   const [showRepeatModal, setShowRepeatModal] = useState(false);
   const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState("Sem categoria");
 
+  const [priorityIndex, setPriorityIndex] = useState(0);
+  const [reminderIndex, setReminderIndex] = useState(0);
+  const [repeatOption, setRepeatOption] = useState("Não");
+  
   const [viewDate, setViewDate] = useState(new Date(today));
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date(today));
 
@@ -194,6 +148,16 @@ export default function CreateTaskModal({
       }
     }
   }, [visible, mode, initialData]);
+
+  const handleCloseAll = () => {
+    setTaskTitle("");
+    setIsLoading(false);
+    setShowDateModal(false);
+    setShowRepeatModal(false);
+    setIsCategoryModalVisible(false);
+    setSelectedCategory("Sem categoria");
+    onClose();
+  };
 
   const daysInMonth = useMemo(() => {
     const year = viewDate.getFullYear();
@@ -225,12 +189,11 @@ export default function CreateTaskModal({
     setViewDate(new Date(newDate.getFullYear(), newDate.getMonth(), 1));
   };
 
-  const handleSaveTask = async () => {
+  const handleSave = async () => {
     if (!taskTitle.trim() || isLoading) return;
     setIsLoading(true);
-<<<<<<< HEAD
     setTimeout(() => {
-      onSaveTask({
+      onSaveTask?.({
         id: mode === "edit" ? initialData?.id : Math.random().toString(),
         title: taskTitle.trim(),
         category: selectedCategory,
@@ -239,73 +202,30 @@ export default function CreateTaskModal({
         repeat: repeatOption,
         reminder: REMINDERS[reminderIndex]
       });
-      setIsLoading(false);
-      onClose();
-    }, 1200);
-=======
-
-    setTimeout(() => {
-      console.log("Tarefa salva com sucesso:", {
-        title: taskTitle,
-        category: selectedCategory,
-      });
       handleCloseAll();
-    }, 2000);
->>>>>>> a84cdfae8e071f99e687eb8d24b4d7a6886deea6
+    }, 1200);
   };
 
   return (
     <>
+      {/* MODAL 1: CRIAÇÃO/EDIÇÃO */}
       <Modal visible={visible} transparent animationType="fade">
-<<<<<<< HEAD
-        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={onClose}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={handleCloseAll}>
           <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={styles.keyboardAvoid}>
-=======
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={handleCloseAll}
-        >
-          <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={styles.keyboardAvoid}
-          >
->>>>>>> a84cdfae8e071f99e687eb8d24b4d7a6886deea6
             <TouchableOpacity activeOpacity={1} style={styles.card}>
-              <View style={styles.inputContainer}>
+              <View style={[styles.inputContainer, { position: 'relative' }]}>
                 <TextInput
                   placeholder="Insira uma nova tarefa aqui"
                   placeholderTextColor="#9ca3af"
                   style={styles.input}
                   autoFocus
+                  maxLength={50}
                   value={taskTitle}
                   onChangeText={setTaskTitle}
+                  editable={!isLoading}
                 />
+                <Text style={{ position: 'absolute', right: 12, top: 16, fontSize: 10, color: '#9ca3af' }}>{taskTitle.length}/50</Text>
               </View>
-<<<<<<< HEAD
-              <View style={styles.divider} />
-              <View style={styles.actionsRow}>
-                <View style={styles.leftActions}>
-                  <TouchableOpacity style={styles.badge} onPress={() => setIsCategoryModalVisible(true)}>
-                    <Text style={styles.badgeText}>{selectedCategory}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => setShowDateModal(true)}>
-                    <MaterialIcons name="calendar-today" size={22} color={selectedDate ? "#5EA5E8" : "#9ca3af"} />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => setShowRepeatModal(true)}>
-                    <MaterialIcons name="repeat" size={22} color={repeatOption !== "Não" ? "#5EA5E8" : "#9ca3af"} />
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={[styles.badge, { borderColor: getPriorityColor(PRIORITIES[priorityIndex]) }]}
-                    onPress={() => setPriorityIndex((priorityIndex + 1) % PRIORITIES.length)}
-                  >
-                    <Text style={[styles.badgeText, { color: getPriorityColor(PRIORITIES[priorityIndex]) }]}>{PRIORITIES[priorityIndex]}</Text>
-                  </TouchableOpacity>
-                  {mode === "edit" && (
-                    <TouchableOpacity onPress={() => onDeleteTask?.(initialData.id)}>
-                      <MaterialIcons name="delete-outline" size={24} color="#ef4444" />
-                    </TouchableOpacity>
-=======
 
               <View style={styles.divider} />
 
@@ -319,31 +239,34 @@ export default function CreateTaskModal({
                     <Text style={styles.badgeText}>{selectedCategory}</Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity
-                    onPress={() => setShowDateModal(true)}
+                  <TouchableOpacity onPress={() => setShowDateModal(true)} disabled={isLoading}>
+                    <MaterialIcons name="calendar-today" size={22} color={selectedDate ? "#5EA5E8" : "#9ca3af"} />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity onPress={() => setShowRepeatModal(true)} disabled={isLoading}>
+                    <MaterialIcons name="repeat" size={22} color={repeatOption !== "Não" ? "#5EA5E8" : "#9ca3af"} />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity 
+                    style={[styles.badge, { borderColor: getPriorityColor(PRIORITIES[priorityIndex]) }]}
+                    onPress={() => setPriorityIndex((priorityIndex + 1) % PRIORITIES.length)}
                     disabled={isLoading}
                   >
-                    <MaterialIcons
-                      name="calendar-today"
-                      size={22}
-                      color="#9ca3af"
-                    />
+                    <Text style={[styles.badgeText, { color: getPriorityColor(PRIORITIES[priorityIndex]) }]}>
+                      {PRIORITIES[priorityIndex]}
+                    </Text>
                   </TouchableOpacity>
 
-                  <TouchableOpacity
-                    onPress={() => setShowRepeatModal(true)}
-                    disabled={isLoading}
-                  >
-                    <MaterialIcons name="repeat" size={22} color="#9ca3af" />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity disabled={isLoading}>
-                    <MaterialIcons name="sort" size={22} color="#9ca3af" />
-                  </TouchableOpacity>
-
-                  <TouchableOpacity style={styles.badge} disabled={isLoading}>
-                    <Text style={styles.badgeText}>Prioridade</Text>
-                  </TouchableOpacity>
+                  {mode === "edit" && (
+                    <TouchableOpacity onPress={() => {
+                        Alert.alert("Excluir", "Apagar esta tarefa?", [
+                            { text: "Cancelar", style: "cancel" },
+                            { text: "Excluir", style: "destructive", onPress: () => { onDeleteTask?.(initialData.id); handleCloseAll(); } }
+                        ]);
+                    }}>
+                      <MaterialIcons name="delete-outline" size={24} color="#ef4444" />
+                    </TouchableOpacity>
+                  )}
                 </View>
 
                 <TouchableOpacity
@@ -351,23 +274,19 @@ export default function CreateTaskModal({
                     styles.sendButton,
                     (!taskTitle.trim() || isLoading) && { opacity: 0.5 },
                   ]}
-                  onPress={handleSaveTask}
+                  onPress={handleSave}
                   disabled={!taskTitle.trim() || isLoading}
                 >
                   {isLoading ? (
                     <ActivityIndicator size="small" color="#fff" />
                   ) : (
                     <MaterialIcons
-                      name="send"
+                      name={mode === "edit" ? "check" : "send"}
                       size={20}
                       color="#fff"
                       style={{ marginLeft: 2 }}
                     />
->>>>>>> a84cdfae8e071f99e687eb8d24b4d7a6886deea6
                   )}
-                </View>
-                <TouchableOpacity style={styles.sendButton} onPress={handleSaveTask}>
-                  {isLoading ? <ActivityIndicator size="small" color="#fff" /> : <MaterialIcons name={mode === "edit" ? "check" : "send"} size={20} color="#fff" />}
                 </TouchableOpacity>
               </View>
             </TouchableOpacity>
@@ -375,109 +294,92 @@ export default function CreateTaskModal({
         </TouchableOpacity>
       </Modal>
 
-<<<<<<< HEAD
-      {/* MODAL DATA COM TUDO O QUE VOCÊ PEDIU NO PRINT */}
-=======
->>>>>>> a84cdfae8e071f99e687eb8d24b4d7a6886deea6
+      {/* MODAL 2: CALENDÁRIO */}
       <Modal visible={showDateModal} transparent animationType="fade">
         <View style={styles.modalOverlayCenter}>
           <View style={styles.centerCard}>
-            <View style={styles.calendarHeader}>
-<<<<<<< HEAD
-              <TouchableOpacity onPress={() => setViewDate(new Date(viewDate.setMonth(viewDate.getMonth() - 1)))}><MaterialIcons name="chevron-left" size={24} color="#374151" /></TouchableOpacity>
+            
+            <View style={[styles.calendarHeader, { justifyContent: 'space-between' }]}>
+              <TouchableOpacity onPress={() => setViewDate(new Date(viewDate.setMonth(viewDate.getMonth() - 1)))}>
+                <MaterialIcons name="chevron-left" size={24} color="#374151" />
+              </TouchableOpacity>
               <Text style={styles.modalTitle}>{monthLabel}</Text>
-              <TouchableOpacity onPress={() => setViewDate(new Date(viewDate.setMonth(viewDate.getMonth() + 1)))}><MaterialIcons name="chevron-right" size={24} color="#374151" /></TouchableOpacity>
-=======
-              <MaterialIcons name="chevron-left" size={24} color="#374151" />
-              <Text style={styles.modalTitle}>Março 2026</Text>
-              <MaterialIcons name="chevron-right" size={24} color="#374151" />
+              <TouchableOpacity onPress={() => setViewDate(new Date(viewDate.setMonth(viewDate.getMonth() + 1)))}>
+                <MaterialIcons name="chevron-right" size={24} color="#374151" />
+              </TouchableOpacity>
             </View>
 
-            <View style={styles.calendarGrid}>
-              <Text style={styles.placeholderGrid}>
-                [ Grade do Calendário ]
-              </Text>
->>>>>>> a84cdfae8e071f99e687eb8d24b4d7a6886deea6
+            <View style={[styles.calendarGrid, { height: 'auto', paddingVertical: 10 }]}>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {["D", "S", "T", "Q", "Q", "S", "S"].map((d, index) => (
+                  <Text key={index} style={{ width: COLUMN_WIDTH, textAlign: 'center', fontSize: 12, color: '#9ca3af', marginBottom: 10, fontWeight: 'bold' }}>{d}</Text>
+                ))}
+                {daysInMonth.map((day, i) => {
+                  const checkDate = day ? new Date(viewDate.getFullYear(), viewDate.getMonth(), day) : null;
+                  const isPast = checkDate ? checkDate < today : false;
+                  const isSelected = selectedDate && day === selectedDate.getDate() && viewDate.getMonth() === selectedDate.getMonth();
+                  return (
+                    <TouchableOpacity 
+                      key={i} 
+                      style={[
+                        { width: COLUMN_WIDTH, height: 40, justifyContent: 'center', alignItems: 'center', borderRadius: 20 },
+                        isSelected && { backgroundColor: '#5EA5E8' },
+                        isPast && { opacity: 0.25 }
+                      ]}
+                      disabled={!day || isPast}
+                      onPress={() => day && setSelectedDate(new Date(viewDate.getFullYear(), viewDate.getMonth(), day))}
+                    >
+                      <Text style={[
+                        { fontSize: 14, color: "#4b5563" },
+                        isSelected && { color: '#fff', fontWeight: 'bold' }, 
+                        !day && { color: 'transparent' }
+                      ]}>{day}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
             </View>
 
-            <View style={styles.calendarGridContainer}>
-              {["D", "S", "T", "Q", "Q", "S", "S"].map(d => <Text key={d} style={styles.weekDayText}>{d}</Text>)}
-              {daysInMonth.map((day, i) => {
-                const checkDate = day ? new Date(viewDate.getFullYear(), viewDate.getMonth(), day) : null;
-                const isPast = checkDate ? checkDate < today : false;
-                const isSelected = selectedDate && day === selectedDate.getDate() && viewDate.getMonth() === selectedDate.getMonth();
-                return (
-                  <TouchableOpacity 
-                    key={i} 
-                    style={[styles.dayBox, isSelected && styles.daySelected, isPast && { opacity: 0.2 }]}
-                    disabled={!day || isPast}
-                    onPress={() => day && setSelectedDate(new Date(viewDate.getFullYear(), viewDate.getMonth(), day))}
-                  >
-                    <Text style={[styles.dayText, isSelected && { color: '#fff', fontWeight: 'bold' }, !day && { color: 'transparent' }]}>{day}</Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-
-            {/* BOTÕES DE ATALHO DO SEU PRINT */}
-            <View style={styles.quickDateRow}>
-<<<<<<< HEAD
-              {["Sem data", "Hoje", "Amanhã", "3 Dias depois", "Este domingo"].map(d => (
-                <TouchableOpacity key={d} style={[styles.quickDateBtn, selectedDate?.toLocaleDateString() === d && styles.optBtnActive]} onPress={() => handleQuickDate(d)}>
-=======
-              {["Sem data", "Hoje", "Amanhã"].map((d) => (
-                <TouchableOpacity key={d} style={styles.quickDateBtn}>
->>>>>>> a84cdfae8e071f99e687eb8d24b4d7a6886deea6
+            <View style={[styles.quickDateRow, { flexWrap: 'wrap' }]}>
+              {["Sem data", "Hoje", "Amanhã", "3 Dias depois", "Este domingo"].map((d) => (
+                <TouchableOpacity key={d} style={styles.quickDateBtn} onPress={() => handleQuickDate(d)}>
                   <Text style={styles.quickDateText}>{d}</Text>
                 </TouchableOpacity>
               ))}
             </View>
 
-            {/* LEMBRETE E REPETIR (IGUAL AO PRINT) */}
-            <TouchableOpacity style={styles.optionItem} onPress={() => setReminderIndex((reminderIndex + 1) % REMINDERS.length)}>
-                <View style={styles.optionLeft}><MaterialIcons name="notifications-none" size={20} color="#9ca3af" /><Text style={styles.optionLabel}>Lembrete</Text></View>
-                <Text style={[styles.optionValue, reminderIndex > 0 && {color: '#5EA5E8'}]}>{REMINDERS[reminderIndex]}</Text>
+            <TouchableOpacity style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, borderTopWidth: 1, borderTopColor: '#f3f4f6' }} onPress={() => setReminderIndex((reminderIndex + 1) % REMINDERS.length)}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <MaterialIcons name="notifications-none" size={20} color="#9ca3af" />
+                <Text style={{ fontSize: 14, color: '#374151' }}>Lembrete</Text>
+              </View>
+              <Text style={[{ fontSize: 14, color: '#9ca3af' }, reminderIndex > 0 && { color: '#5EA5E8' }]}>{REMINDERS[reminderIndex]}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.optionItem} onPress={() => setShowRepeatModal(true)}>
-                <View style={styles.optionLeft}><MaterialIcons name="repeat" size={20} color="#9ca3af" /><Text style={styles.optionLabel}>Repetir</Text></View>
-                <Text style={[styles.optionValue, repeatOption !== "Não" && {color: '#5EA5E8'}]}>{repeatOption}</Text>
+            <TouchableOpacity style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, borderTopWidth: 1, borderTopColor: '#f3f4f6' }} onPress={() => setShowRepeatModal(true)}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                <MaterialIcons name="repeat" size={20} color="#9ca3af" />
+                <Text style={{ fontSize: 14, color: '#374151' }}>Repetir</Text>
+              </View>
+              <Text style={[{ fontSize: 14, color: '#9ca3af' }, repeatOption !== "Não" && { color: '#5EA5E8' }]}>{repeatOption}</Text>
             </TouchableOpacity>
 
             <View style={styles.modalFooter}>
-<<<<<<< HEAD
-              <TouchableOpacity onPress={() => setShowDateModal(false)}><Text style={styles.cancelText}>Cancelar</Text></TouchableOpacity>
-              <TouchableOpacity style={styles.confirmBtn} onPress={() => setShowDateModal(false)}><Text style={styles.confirmBtnText}>Concluído</Text></TouchableOpacity>
-=======
               <TouchableOpacity onPress={() => setShowDateModal(false)}>
                 <Text style={styles.cancelText}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.confirmBtn}
-                onPress={() => {
-                  setShowDateModal(false);
-                  setShowRepeatModal(true);
-                }}
+                onPress={() => setShowDateModal(false)}
               >
                 <Text style={styles.confirmBtnText}>Concluído</Text>
               </TouchableOpacity>
->>>>>>> a84cdfae8e071f99e687eb8d24b4d7a6886deea6
             </View>
           </View>
         </View>
       </Modal>
 
-<<<<<<< HEAD
-      {/* MODAL REPETIÇÃO */}
-      <Modal visible={showRepeatModal} transparent animationType="fade">
-        <View style={styles.modalOverlayCenter}>
-          <View style={[styles.centerCard, { alignItems: "center" }]}>
-            <Text style={[styles.modalTitle, { marginBottom: 25 }]}>Repetir tarefa</Text>
-            <View style={styles.repeatOptions}>
-              {["Diário", "Semanal", "Mensal", "Não"].map((opt) => (
-                <TouchableOpacity key={opt} style={[styles.optBtn, repeatOption === opt && styles.optBtnActive]} onPress={() => setRepeatOption(opt)}>
-                  <Text style={repeatOption === opt ? styles.optTextActive : styles.optText}>{opt}</Text>
-=======
+      {/* MODAL 3: REPETIÇÃO */}
       <Modal visible={showRepeatModal} transparent animationType="fade">
         <View style={styles.modalOverlayCenter}>
           <View style={[styles.centerCard, { alignItems: "center" }]}>
@@ -486,25 +388,20 @@ export default function CreateTaskModal({
             </Text>
 
             <View style={styles.repeatOptions}>
-              {["Diário", "Semanal", "Mensal"].map((opt, index) => (
+              {["Diário", "Semanal", "Mensal", "Não"].map((opt) => (
                 <TouchableOpacity
                   key={opt}
-                  style={[styles.optBtn, index === 1 && styles.optBtnActive]}
+                  style={[styles.optBtn, repeatOption === opt && styles.optBtnActive]}
+                  onPress={() => setRepeatOption(opt)}
                 >
-                  <Text
-                    style={index === 1 ? styles.optTextActive : styles.optText}
-                  >
+                  <Text style={repeatOption === opt ? styles.optTextActive : styles.optText}>
                     {opt}
                   </Text>
->>>>>>> a84cdfae8e071f99e687eb8d24b4d7a6886deea6
                 </TouchableOpacity>
               ))}
             </View>
+
             <View style={styles.modalFooter}>
-<<<<<<< HEAD
-              <TouchableOpacity style={styles.cancelBlueBtn} onPress={() => setShowRepeatModal(false)}><Text style={styles.confirmBtnText}>Cancelar</Text></TouchableOpacity>
-              <TouchableOpacity style={styles.outlineBtn} onPress={() => setShowRepeatModal(false)}><Text style={styles.cancelText}>Concluído</Text></TouchableOpacity>
-=======
               <TouchableOpacity
                 style={styles.cancelBlueBtn}
                 onPress={() => setShowRepeatModal(false)}
@@ -517,70 +414,24 @@ export default function CreateTaskModal({
               >
                 <Text style={styles.cancelText}>Concluído</Text>
               </TouchableOpacity>
->>>>>>> a84cdfae8e071f99e687eb8d24b4d7a6886deea6
             </View>
           </View>
         </View>
       </Modal>
 
-<<<<<<< HEAD
-      <CreateCategoryModal visible={isCategoryModalVisible} onClose={() => setIsCategoryModalVisible(false)} onCreate={(newCat: any) => setSelectedCategory(newCat.name)} />
-=======
       <CreateCategoryModal
         visible={isCategoryModalVisible}
         onClose={() => setIsCategoryModalVisible(false)}
-        onCreate={(newCategory) => {
+        onCreate={(newCategory: any) => {
           setSelectedCategory(newCategory.name);
         }}
       />
->>>>>>> a84cdfae8e071f99e687eb8d24b4d7a6886deea6
     </>
   );
 }
 
-// --- ESTRUTURA DO SEU PRINT MANTIDA ---
+// --- SEU STYLESHEET EXATO, INTACTO E PURO ---
 const styles = StyleSheet.create({
-<<<<<<< HEAD
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.15)", justifyContent: "flex-end", padding: 16 },
-  keyboardAvoid: { width: "100%" },
-  card: { backgroundColor: "#fff", borderRadius: 12, padding: 16, marginBottom: 80, elevation: 5, shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 8 },
-  inputContainer: { marginBottom: 12 },
-  input: { height: 48, borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 8, paddingHorizontal: 14, fontSize: 16, color: "#374151" },
-  divider: { height: 1, backgroundColor: "#E5E7EB", marginBottom: 12 },
-  actionsRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  leftActions: { flexDirection: "row", alignItems: "center", gap: 12 },
-  badge: { borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 16, paddingHorizontal: 10, paddingVertical: 6 },
-  badgeText: { fontSize: 12, color: "#9ca3af", fontWeight: "500" },
-  sendButton: { width: 40, height: 40, borderRadius: 20, backgroundColor: "#5EA5E8", justifyContent: "center", alignItems: "center" },
-  modalOverlayCenter: { flex: 1, backgroundColor: "rgba(0,0,0,0.4)", justifyContent: "center", alignItems: "center", paddingHorizontal: 20 },
-  centerCard: { width: width * 0.9, backgroundColor: "#fff", borderRadius: 16, padding: 24 },
-  calendarHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 20 },
-  modalTitle: { fontSize: 18, fontWeight: "bold", color: "#111827", marginBottom: 16 },
-  calendarGridContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-start', marginBottom: 10 },
-  weekDayText: { width: COLUMN_WIDTH, textAlign: 'center', fontSize: 12, color: '#9ca3af', marginBottom: 10, fontWeight: 'bold' },
-  dayBox: { width: COLUMN_WIDTH, height: 40, justifyContent: 'center', alignItems: 'center', marginBottom: 5 },
-  daySelected: { backgroundColor: '#5EA5E8', borderRadius: 20 },
-  dayText: { fontSize: 14, color: "#4b5563" },
-  quickDateRow: { flexDirection: "row", flexWrap: 'wrap', gap: 10, marginBottom: 20 },
-  quickDateBtn: { paddingHorizontal: 15, paddingVertical: 8, backgroundColor: "#f3f4f6", borderRadius: 8 },
-  quickDateText: { fontSize: 13, color: "#4b5563" },
-  optionItem: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, borderTopWidth: 1, borderTopColor: '#f3f4f6' },
-  optionLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  optionLabel: { fontSize: 14, color: '#374151' },
-  optionValue: { fontSize: 14, color: '#9ca3af' },
-  modalFooter: { flexDirection: "row", justifyContent: "flex-end", alignItems: "center", gap: 15, marginTop: 20 },
-  cancelText: { color: "#5EA5E8", fontWeight: "bold" },
-  confirmBtn: { backgroundColor: "#5EA5E8", paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8 },
-  confirmBtnText: { color: "#fff", fontWeight: "bold" },
-  repeatOptions: { flexDirection: "row", gap: 10, marginBottom: 30 },
-  optBtn: { paddingHorizontal: 15, paddingVertical: 10, backgroundColor: "#f3f4f6", borderRadius: 8 },
-  optBtnActive: { backgroundColor: "#5EA5E8" },
-  optText: { color: "#4b5563" },
-  optTextActive: { color: "#fff", fontWeight: "bold" },
-  cancelBlueBtn: { backgroundColor: "#5EA5E8", paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8 },
-  outlineBtn: { borderWidth: 1, borderColor: "#5EA5E8", paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8 },
-});
-=======
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.15)",
@@ -758,4 +609,3 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
 });
->>>>>>> a84cdfae8e071f99e687eb8d24b4d7a6886deea6
