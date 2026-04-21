@@ -15,7 +15,7 @@ import {
 } from "react-native";
 import { Calendar, LocaleConfig } from "react-native-calendars";
 
-// Tradução do Calendário para o Português
+// Tradução do Calendário
 LocaleConfig.locales["pt-br"] = {
   monthNames: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
   monthNamesShort: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"],
@@ -83,9 +83,33 @@ function CreateCategoryModal({ visible, onClose, onCreate }: any) {
 
 // --- COMPONENTE PRINCIPAL ---
 export default function CreateTaskModal({ visible, onClose, onSaveTask, onDeleteTask, mode = "create", initialData }: any) {
-  // Pegando a data de hoje para travar o calendário e usar de referência
+  
+  // Base de datas
   const todayDate = useMemo(() => new Date(), []);
-  const todayStr = useMemo(() => todayDate.toISOString().split("T")[0], [todayDate]);
+  
+  const tomorrowDate = useMemo(() => {
+    const d = new Date(todayDate);
+    d.setDate(d.getDate() + 1);
+    return d;
+  }, [todayDate]);
+  const tomorrowStr = useMemo(() => tomorrowDate.toISOString().split("T")[0], [tomorrowDate]);
+
+  // Novas variáveis para saber qual é o dia exato de "3 dias" e "Este domingo"
+  const threeDaysDate = useMemo(() => {
+    const d = new Date(todayDate);
+    d.setDate(d.getDate() + 3);
+    return d;
+  }, [todayDate]);
+  const threeDaysStr = useMemo(() => threeDaysDate.toISOString().split("T")[0], [threeDaysDate]);
+
+  const sundayDate = useMemo(() => {
+    const d = new Date(todayDate);
+    const diff = d.getDay() === 0 ? 0 : 7 - d.getDay();
+    d.setDate(d.getDate() + diff);
+    return d;
+  }, [todayDate]);
+  const sundayStr = useMemo(() => sundayDate.toISOString().split("T")[0], [sundayDate]);
+
 
   const [taskTitle, setTaskTitle] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -98,7 +122,7 @@ export default function CreateTaskModal({ visible, onClose, onSaveTask, onDelete
   const [showRepeatModal, setShowRepeatModal] = useState(false);
   const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
 
-  const [selectedDateStr, setSelectedDateStr] = useState<string>(todayStr);
+  const [selectedDateStr, setSelectedDateStr] = useState<string>(tomorrowStr);
 
   useEffect(() => {
     if (visible) {
@@ -106,17 +130,17 @@ export default function CreateTaskModal({ visible, onClose, onSaveTask, onDelete
         setTaskTitle(initialData.title);
         setSelectedCategory(initialData.category || "Sem categoria");
         setPriorityIndex(Math.max(0, PRIORITIES.indexOf(initialData.priority)));
-        setSelectedDateStr(initialData.dateStr || todayStr);
+        setSelectedDateStr(initialData.dateStr || tomorrowStr);
       } else {
         setTaskTitle("");
         setSelectedCategory("Sem categoria");
         setPriorityIndex(0);
         setRepeatOption("Não");
         setReminderIndex(0);
-        setSelectedDateStr(todayStr);
+        setSelectedDateStr(tomorrowStr);
       }
     }
-  }, [visible, mode, initialData, todayStr]);
+  }, [visible, mode, initialData, tomorrowStr]);
 
   const handleCloseAll = () => {
     setIsLoading(false);
@@ -127,17 +151,14 @@ export default function CreateTaskModal({ visible, onClose, onSaveTask, onDelete
   };
 
   const handleQuickDate = (type: string) => {
-    const newDate = new Date(todayDate);
-    if (type === "Amanhã") newDate.setDate(todayDate.getDate() + 1);
-    else if (type === "3 Dias depois") newDate.setDate(todayDate.getDate() + 3);
-    else if (type === "Este domingo") {
-      const diff = todayDate.getDay() === 0 ? 0 : 7 - todayDate.getDay();
-      newDate.setDate(todayDate.getDate() + diff);
-    } else if (type === "Sem data") {
+    if (type === "Sem data") {
       setSelectedDateStr("");
       return;
     }
-    setSelectedDateStr(newDate.toISOString().split("T")[0]);
+    
+    if (type === "Amanhã") setSelectedDateStr(tomorrowStr);
+    else if (type === "3 Dias depois") setSelectedDateStr(threeDaysStr);
+    else if (type === "Este domingo") setSelectedDateStr(sundayStr);
   };
 
   const handleSave = () => {
@@ -239,9 +260,9 @@ export default function CreateTaskModal({ visible, onClose, onSaveTask, onDelete
         <View style={styles.modalOverlayCenter}>
           <View style={styles.centerCard}>
             <Calendar
-              minDate={todayStr}
+              minDate={tomorrowStr}
               hideExtraDays={true}
-              current={selectedDateStr || todayStr}
+              current={selectedDateStr || tomorrowStr}
               onDayPress={(day: any) => setSelectedDateStr(day.dateString)}
               markedDates={{
                 [selectedDateStr]: { selected: true, selectedColor: "#5EA5E8" },
@@ -267,8 +288,15 @@ export default function CreateTaskModal({ visible, onClose, onSaveTask, onDelete
             />
 
             <View style={styles.quickDateRow}>
-              {["Sem data", "Hoje", "Amanhã", "3 Dias depois", "Este domingo"].map((d) => {
-                const isActive = (d === "Hoje" && selectedDateStr === todayStr) || (d === "Sem data" && !selectedDateStr);
+              {["Sem data", "Amanhã", "3 Dias depois", "Este domingo"].map((d) => {
+                
+                // REGRA CORRIGIDA: Agora o código sabe checar cada botão separadamente
+                const isActive = 
+                  (d === "Sem data" && !selectedDateStr) ||
+                  (d === "Amanhã" && selectedDateStr === tomorrowStr) ||
+                  (d === "3 Dias depois" && selectedDateStr === threeDaysStr) ||
+                  (d === "Este domingo" && selectedDateStr === sundayStr);
+
                 return (
                   <TouchableOpacity key={d} style={[styles.quickDateBtn, isActive && styles.quickDateBtnActive]} onPress={() => handleQuickDate(d)}>
                     <Text style={[styles.quickDateText, isActive && styles.quickDateTextActive]}>{d}</Text>
@@ -342,7 +370,7 @@ export default function CreateTaskModal({ visible, onClose, onSaveTask, onDelete
   );
 }
 
-// --- ESTILOS VISUAIS AJUSTADOS ---
+// --- ESTILOS VISUAIS ---
 const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
