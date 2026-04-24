@@ -1,5 +1,4 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { usePathname, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
   FlatList,
@@ -15,9 +14,10 @@ import {
 } from "react-native-safe-area-context";
 
 import CategoryFilter from "@/src/components/CategoryFilter";
+import CreateTaskModal from "@/src/components/CreateTaskModal";
 import TaskCard from "@/src/components/TaskCard";
 
-const categories = [
+const INITIAL_CATEGORIES = [
   "Todos",
   "Trabalhos",
   "Pessoal",
@@ -26,18 +26,68 @@ const categories = [
   "Outro",
 ];
 
-const tasks: { id: string; title: string; category: string }[] = [];
-
 export default function Home() {
   const insets = useSafeAreaInsets();
+
+  const [categories, setCategories] = useState(INITIAL_CATEGORIES);
   const [selectedCategory, setSelectedCategory] = useState("Todos");
-  const router = useRouter();
-  const pathname = usePathname();
+
+  const [tasks, setTasks] = useState<
+    { id: string; title: string; category: string }[]
+  >([]);
+
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<any>(null);
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
+
+  const handleAddCategory = (newCategory: string) => {
+    const formattedCategory = newCategory.trim();
+
+    if (!formattedCategory) return;
+
+    if (!categories.includes(formattedCategory)) {
+      setCategories((prev) => [...prev, formattedCategory]);
+    }
+  };
+
+  const handleSaveTask = (taskData: any) => {
+    const taskCategory =
+      taskData.category === "Sem categoria" ? "Todos" : taskData.category;
+
+    if (modalMode === "edit" && selectedTask) {
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === selectedTask.id
+            ? {
+                ...task,
+                title: taskData.title,
+                category: taskCategory,
+              }
+            : task,
+        ),
+      );
+    } else {
+      const newTask = {
+        id: Math.random().toString(),
+        title: taskData.title,
+        category: taskCategory,
+      };
+
+      setTasks((prevTasks) => [newTask, ...prevTasks]);
+    }
+
+    if (taskCategory !== "Todos") {
+      handleAddCategory(taskCategory);
+    }
+
+    setShowCreateModal(false);
+  };
 
   const filteredTasks = useMemo(() => {
     if (selectedCategory === "Todos") return tasks;
+
     return tasks.filter((task) => task.category === selectedCategory);
-  }, [selectedCategory]);
+  }, [selectedCategory, tasks]);
 
   const bottomBarHeight = 60 + insets.bottom;
   const fabBottom = bottomBarHeight + 16;
@@ -61,6 +111,7 @@ export default function Home() {
                 style={styles.emptyImage}
                 resizeMode="contain"
               />
+
               <Text style={styles.emptyText}>
                 Nenhuma tarefa em {selectedCategory}
               </Text>
@@ -69,7 +120,18 @@ export default function Home() {
             <FlatList
               data={filteredTasks}
               keyExtractor={(item) => item.id}
-              renderItem={({ item }) => <TaskCard title={item.title} />}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    setSelectedTask(item);
+                    setModalMode("edit");
+                    setShowCreateModal(true);
+                  }}
+                >
+                  <TaskCard title={item.title} />
+                </TouchableOpacity>
+              )}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={[
                 styles.listContent,
@@ -82,6 +144,11 @@ export default function Home() {
         <TouchableOpacity
           style={[styles.fab, { bottom: fabBottom }]}
           activeOpacity={0.85}
+          onPress={() => {
+            setModalMode("create");
+            setSelectedTask(null);
+            setShowCreateModal(true);
+          }}
         >
           <MaterialIcons name="add" size={30} color="#fff" />
         </TouchableOpacity>
@@ -98,60 +165,44 @@ export default function Home() {
           <TouchableOpacity
             style={styles.bottomItem}
             activeOpacity={0.8}
-            // onPress={() => router.push("/create")}
+            onPress={() => {
+              setModalMode("create");
+              setSelectedTask(null);
+              setShowCreateModal(true);
+            }}
           >
-            {pathname === "/create" ? (
-              <View style={styles.activeCircle}>
-                <MaterialIcons name="add" size={24} color="#fff" />
-              </View>
-            ) : (
-              <MaterialIcons name="add" size={24} color="#5EA5E8" />
-            )}
+            <MaterialIcons name="add" size={24} color="#5EA5E8" />
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.bottomItem}
-            activeOpacity={0.8}
-            onPress={() => router.push("/home")}
-          >
-            {pathname === "/home" ? (
-              <View style={styles.activeCircle}>
-                <MaterialIcons name="list" size={22} color="#fff" />
-              </View>
-            ) : (
-              <MaterialIcons name="list" size={22} color="#5EA5E8" />
-            )}
+          <TouchableOpacity style={styles.bottomItem} activeOpacity={0.8}>
+            <View style={styles.activeCircle}>
+              <MaterialIcons name="list" size={22} color="#fff" />
+            </View>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.bottomItem}
-            activeOpacity={0.8}
-            onPress={() => router.push("./calendar")}
-          >
-            {pathname === "/calendar" ? (
-              <View style={styles.activeCircle}>
-                <MaterialIcons name="calendar-today" size={22} color="#fff" />
-              </View>
-            ) : (
-              <MaterialIcons name="calendar-today" size={22} color="#5EA5E8" />
-            )}
+          <TouchableOpacity style={styles.bottomItem} activeOpacity={0.8}>
+            <MaterialIcons name="calendar-today" size={22} color="#5EA5E8" />
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.bottomItem}
-            activeOpacity={0.8}
-            onPress={() => router.push("./dashboard")}
-          >
-            {pathname === "/dashboard" ? (
-              <View style={styles.activeCircle}>
-                <MaterialIcons name="person-outline" size={24} color="#fff" />
-              </View>
-            ) : (
-              <MaterialIcons name="person-outline" size={24} color="#5EA5E8" />
-            )}
+          <TouchableOpacity style={styles.bottomItem} activeOpacity={0.8}>
+            <MaterialIcons name="person-outline" size={24} color="#5EA5E8" />
           </TouchableOpacity>
         </View>
       </View>
+
+      <CreateTaskModal
+        visible={showCreateModal}
+        mode={modalMode}
+        initialData={selectedTask}
+        categories={categories.filter((item) => item !== "Todos")}
+        onAddCategory={(newCategory: string) => {
+          if (!categories.includes(newCategory)) {
+            setCategories((prev) => [...prev, newCategory]);
+          }
+        }}
+        onClose={() => setShowCreateModal(false)}
+        onSaveTask={handleSaveTask}
+      />
     </SafeAreaView>
   );
 }
@@ -161,45 +212,37 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F3F4F6",
   },
-
   container: {
     flex: 1,
     backgroundColor: "#F3F4F6",
   },
-
   categoriesWrapper: {
     paddingTop: 8,
     paddingBottom: 8,
   },
-
   content: {
     flex: 1,
   },
-
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
   },
-
   emptyImage: {
     width: 170,
     height: 170,
   },
-
   emptyText: {
     marginTop: 12,
     fontSize: 14,
     color: "#6B7280",
     textAlign: "center",
   },
-
   listContent: {
     paddingHorizontal: 14,
     paddingTop: 8,
   },
-
   fab: {
     position: "absolute",
     right: 18,
@@ -215,7 +258,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.18,
     shadowRadius: 4,
   },
-
   bottomBar: {
     backgroundColor: "#F8F8F8",
     borderTopWidth: 1,
@@ -225,13 +267,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 8,
   },
-
   bottomItem: {
     width: 50,
     alignItems: "center",
     justifyContent: "center",
   },
-
   activeCircle: {
     width: 36,
     height: 36,
