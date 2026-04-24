@@ -126,7 +126,7 @@ export default function Home() {
           <TouchableOpacity
             style={styles.bottomItem}
             activeOpacity={0.8}
-            onPress={() => router.push("/calendar")}
+            onPress={() => router.push("./calendar")}
           >
             {pathname === "/calendar" ? (
               <View style={styles.activeCircle}>
@@ -140,7 +140,7 @@ export default function Home() {
           <TouchableOpacity
             style={styles.bottomItem}
             activeOpacity={0.8}
-            //onPress={() => router.push("/dashboard")}
+            onPress={() => router.push("./dashboard")}
           >
             {pathname === "/dashboard" ? (
               <View style={styles.activeCircle}>
