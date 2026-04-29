@@ -15,29 +15,42 @@ import {
 } from "react-native-safe-area-context";
 
 import CategoryFilter from "@/src/components/CategoryFilter";
+import CreateTaskModal from "@/src/components/CreateTaskModal";
 import TaskCard from "@/src/components/TaskCard";
 
-const categories = [
-  "Todos",
-  "Trabalhos",
-  "Pessoal",
-  "Dia a dia",
-  "Teste",
-  "Outro",
-];
-
-const tasks: { id: string; title: string; category: string }[] = [];
+const categories = ["Todos", "Trabalhos", "Pessoal", "Dia a dia", "Teste", "Outro"];
 
 export default function Home() {
   const insets = useSafeAreaInsets();
   const [selectedCategory, setSelectedCategory] = useState("Todos");
+<<<<<<< HEAD
+  const [tasks, setTasks] = useState<{ id: string; title: string; category: string }[]>([]);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<any>(null);
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
+
+  const handleSaveTask = (taskData: any) => {
+    if (modalMode === "edit" && selectedTask) {
+      setTasks(tasks.map(t => t.id === selectedTask.id ? { ...t, title: taskData.title, category: taskData.category } : t));
+    } else {
+      const newTask = {
+        id: Math.random().toString(),
+        title: taskData.title,
+        category: taskData.category === "Sem categoria" ? "Todos" : taskData.category,
+      };
+      setTasks([newTask, ...tasks]);
+    }
+    setShowCreateModal(false);
+  };
+=======
   const router = useRouter();
   const pathname = usePathname();
+>>>>>>> dev
 
   const filteredTasks = useMemo(() => {
     if (selectedCategory === "Todos") return tasks;
     return tasks.filter((task) => task.category === selectedCategory);
-  }, [selectedCategory]);
+  }, [selectedCategory, tasks]); 
 
   const bottomBarHeight = 60 + insets.bottom;
   const fabBottom = bottomBarHeight + 16;
@@ -69,7 +82,15 @@ export default function Home() {
             <FlatList
               data={filteredTasks}
               keyExtractor={(item) => item.id}
-              renderItem={({ item }) => <TaskCard title={item.title} />}
+              renderItem={({ item }) => (
+                <TouchableOpacity onPress={() => {
+                  setSelectedTask(item);
+                  setModalMode("edit");
+                  setShowCreateModal(true);
+                }}>
+                  <TaskCard title={item.title} />
+                </TouchableOpacity>
+              )}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={[
                 styles.listContent,
@@ -82,6 +103,11 @@ export default function Home() {
         <TouchableOpacity
           style={[styles.fab, { bottom: fabBottom }]}
           activeOpacity={0.85}
+          onPress={() => {
+            setModalMode("create");
+            setSelectedTask(null);
+            setShowCreateModal(true);
+          }}
         >
           <MaterialIcons name="add" size={30} color="#fff" />
         </TouchableOpacity>
@@ -95,6 +121,10 @@ export default function Home() {
             },
           ]}
         >
+<<<<<<< HEAD
+          <TouchableOpacity style={styles.bottomItem} activeOpacity={0.8} onPress={() => { setModalMode("create"); setShowCreateModal(true); }}>
+            <MaterialIcons name="add" size={24} color="#5EA5E8" />
+=======
           <TouchableOpacity
             style={styles.bottomItem}
             activeOpacity={0.8}
@@ -107,6 +137,7 @@ export default function Home() {
             ) : (
               <MaterialIcons name="add" size={24} color="#5EA5E8" />
             )}
+>>>>>>> dev
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -152,54 +183,55 @@ export default function Home() {
           </TouchableOpacity>
         </View>
       </View>
+
+      <CreateTaskModal 
+        visible={showCreateModal} 
+        mode={modalMode}
+        initialData={selectedTask}
+        onClose={() => setShowCreateModal(false)} 
+        onSaveTask={handleSaveTask}
+      />
     </SafeAreaView>
   );
 }
 
+// CSS IGUAL AOS SEUS PRINTS
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "#F3F4F6",
   },
-
   container: {
     flex: 1,
     backgroundColor: "#F3F4F6",
   },
-
   categoriesWrapper: {
     paddingTop: 8,
     paddingBottom: 8,
   },
-
   content: {
     flex: 1,
   },
-
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
   },
-
   emptyImage: {
     width: 170,
     height: 170,
   },
-
   emptyText: {
     marginTop: 12,
     fontSize: 14,
     color: "#6B7280",
     textAlign: "center",
   },
-
   listContent: {
     paddingHorizontal: 14,
     paddingTop: 8,
   },
-
   fab: {
     position: "absolute",
     right: 18,
@@ -215,7 +247,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.18,
     shadowRadius: 4,
   },
-
   bottomBar: {
     backgroundColor: "#F8F8F8",
     borderTopWidth: 1,
@@ -225,13 +256,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 8,
   },
-
   bottomItem: {
     width: 50,
     alignItems: "center",
     justifyContent: "center",
   },
-
   activeCircle: {
     width: 36,
     height: 36,

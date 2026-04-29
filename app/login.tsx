@@ -142,7 +142,7 @@ export default function Login() {
                     { color: COLORS.primary },
                   ])}
                 >
-                  Criar conta
+                  Crie uma!
                 </Text>
               </TouchableOpacity>
             </Link>
@@ -243,7 +243,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   footerText: {
-    color: "#6b7280",
-    fontSize: 16,
+    color: "#6b7280"
   },
 });
