@@ -1,4 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import { usePathname, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
   FlatList,
@@ -22,6 +23,7 @@ const categories = ["Todos", "Trabalhos", "Pessoal", "Dia a dia", "Teste", "Outr
 export default function Home() {
   const insets = useSafeAreaInsets();
   const [selectedCategory, setSelectedCategory] = useState("Todos");
+<<<<<<< HEAD
   const [tasks, setTasks] = useState<{ id: string; title: string; category: string }[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any>(null);
@@ -40,6 +42,10 @@ export default function Home() {
     }
     setShowCreateModal(false);
   };
+=======
+  const router = useRouter();
+  const pathname = usePathname();
+>>>>>>> dev
 
   const filteredTasks = useMemo(() => {
     if (selectedCategory === "Todos") return tasks;
@@ -115,22 +121,65 @@ export default function Home() {
             },
           ]}
         >
+<<<<<<< HEAD
           <TouchableOpacity style={styles.bottomItem} activeOpacity={0.8} onPress={() => { setModalMode("create"); setShowCreateModal(true); }}>
             <MaterialIcons name="add" size={24} color="#5EA5E8" />
+=======
+          <TouchableOpacity
+            style={styles.bottomItem}
+            activeOpacity={0.8}
+            // onPress={() => router.push("/create")}
+          >
+            {pathname === "/create" ? (
+              <View style={styles.activeCircle}>
+                <MaterialIcons name="add" size={24} color="#fff" />
+              </View>
+            ) : (
+              <MaterialIcons name="add" size={24} color="#5EA5E8" />
+            )}
+>>>>>>> dev
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.bottomItem} activeOpacity={0.8}>
-            <View style={styles.activeCircle}>
-              <MaterialIcons name="list" size={22} color="#fff" />
-            </View>
+          <TouchableOpacity
+            style={styles.bottomItem}
+            activeOpacity={0.8}
+            onPress={() => router.push("/home")}
+          >
+            {pathname === "/home" ? (
+              <View style={styles.activeCircle}>
+                <MaterialIcons name="list" size={22} color="#fff" />
+              </View>
+            ) : (
+              <MaterialIcons name="list" size={22} color="#5EA5E8" />
+            )}
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.bottomItem} activeOpacity={0.8}>
-            <MaterialIcons name="calendar-today" size={22} color="#5EA5E8" />
+          <TouchableOpacity
+            style={styles.bottomItem}
+            activeOpacity={0.8}
+            onPress={() => router.push("./calendar")}
+          >
+            {pathname === "/calendar" ? (
+              <View style={styles.activeCircle}>
+                <MaterialIcons name="calendar-today" size={22} color="#fff" />
+              </View>
+            ) : (
+              <MaterialIcons name="calendar-today" size={22} color="#5EA5E8" />
+            )}
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.bottomItem} activeOpacity={0.8}>
-            <MaterialIcons name="person-outline" size={24} color="#5EA5E8" />
+          <TouchableOpacity
+            style={styles.bottomItem}
+            activeOpacity={0.8}
+            onPress={() => router.push("./dashboard")}
+          >
+            {pathname === "/dashboard" ? (
+              <View style={styles.activeCircle}>
+                <MaterialIcons name="person-outline" size={24} color="#fff" />
+              </View>
+            ) : (
+              <MaterialIcons name="person-outline" size={24} color="#5EA5E8" />
+            )}
           </TouchableOpacity>
         </View>
       </View>
