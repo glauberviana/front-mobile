@@ -1,5 +1,4 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { usePathname, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
   FlatList,
@@ -18,39 +17,77 @@ import CategoryFilter from "@/src/components/CategoryFilter";
 import CreateTaskModal from "@/src/components/CreateTaskModal";
 import TaskCard from "@/src/components/TaskCard";
 
-const categories = ["Todos", "Trabalhos", "Pessoal", "Dia a dia", "Teste", "Outro"];
+const INITIAL_CATEGORIES = [
+  "Todos",
+  "Trabalhos",
+  "Pessoal",
+  "Dia a dia",
+  "Teste",
+  "Outro",
+];
 
 export default function Home() {
   const insets = useSafeAreaInsets();
+
+  const [categories, setCategories] = useState(INITIAL_CATEGORIES);
   const [selectedCategory, setSelectedCategory] = useState("Todos");
-<<<<<<< HEAD
-  const [tasks, setTasks] = useState<{ id: string; title: string; category: string }[]>([]);
+
+  const [tasks, setTasks] = useState<
+    { id: string; title: string; category: string }[]
+  >([]);
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any>(null);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
 
+  const handleAddCategory = (newCategory: string) => {
+    const formattedCategory = newCategory.trim();
+
+    if (!formattedCategory) return;
+
+    if (!categories.includes(formattedCategory)) {
+      setCategories((prev) => [...prev, formattedCategory]);
+    }
+  };
+
   const handleSaveTask = (taskData: any) => {
+    const taskCategory =
+      taskData.category === "Sem categoria" ? "Todos" : taskData.category;
+
     if (modalMode === "edit" && selectedTask) {
-      setTasks(tasks.map(t => t.id === selectedTask.id ? { ...t, title: taskData.title, category: taskData.category } : t));
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === selectedTask.id
+            ? {
+                ...task,
+                title: taskData.title,
+                category: taskCategory,
+              }
+            : task,
+        ),
+      );
     } else {
       const newTask = {
         id: Math.random().toString(),
         title: taskData.title,
-        category: taskData.category === "Sem categoria" ? "Todos" : taskData.category,
+        category: taskCategory,
       };
-      setTasks([newTask, ...tasks]);
+
+      setTasks((prevTasks) => [newTask, ...prevTasks]);
     }
+
+    if (taskCategory !== "Todos") {
+      handleAddCategory(taskCategory);
+    }
+
     setShowCreateModal(false);
   };
-=======
-  const router = useRouter();
-  const pathname = usePathname();
->>>>>>> dev
 
   const filteredTasks = useMemo(() => {
     if (selectedCategory === "Todos") return tasks;
+
     return tasks.filter((task) => task.category === selectedCategory);
-  }, [selectedCategory, tasks]); 
+  }, [selectedCategory, tasks]);
 
   const bottomBarHeight = 60 + insets.bottom;
   const fabBottom = bottomBarHeight + 16;
@@ -74,6 +111,7 @@ export default function Home() {
                 style={styles.emptyImage}
                 resizeMode="contain"
               />
+
               <Text style={styles.emptyText}>
                 Nenhuma tarefa em {selectedCategory}
               </Text>
@@ -83,11 +121,14 @@ export default function Home() {
               data={filteredTasks}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
-                <TouchableOpacity onPress={() => {
-                  setSelectedTask(item);
-                  setModalMode("edit");
-                  setShowCreateModal(true);
-                }}>
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    setSelectedTask(item);
+                    setModalMode("edit");
+                    setShowCreateModal(true);
+                  }}
+                >
                   <TaskCard title={item.title} />
                 </TouchableOpacity>
               )}
@@ -121,81 +162,51 @@ export default function Home() {
             },
           ]}
         >
-<<<<<<< HEAD
-          <TouchableOpacity style={styles.bottomItem} activeOpacity={0.8} onPress={() => { setModalMode("create"); setShowCreateModal(true); }}>
+          <TouchableOpacity
+            style={styles.bottomItem}
+            activeOpacity={0.8}
+            onPress={() => {
+              setModalMode("create");
+              setSelectedTask(null);
+              setShowCreateModal(true);
+            }}
+          >
             <MaterialIcons name="add" size={24} color="#5EA5E8" />
-=======
-          <TouchableOpacity
-            style={styles.bottomItem}
-            activeOpacity={0.8}
-            // onPress={() => router.push("/create")}
-          >
-            {pathname === "/create" ? (
-              <View style={styles.activeCircle}>
-                <MaterialIcons name="add" size={24} color="#fff" />
-              </View>
-            ) : (
-              <MaterialIcons name="add" size={24} color="#5EA5E8" />
-            )}
->>>>>>> dev
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.bottomItem}
-            activeOpacity={0.8}
-            onPress={() => router.push("/home")}
-          >
-            {pathname === "/home" ? (
-              <View style={styles.activeCircle}>
-                <MaterialIcons name="list" size={22} color="#fff" />
-              </View>
-            ) : (
-              <MaterialIcons name="list" size={22} color="#5EA5E8" />
-            )}
+          <TouchableOpacity style={styles.bottomItem} activeOpacity={0.8}>
+            <View style={styles.activeCircle}>
+              <MaterialIcons name="list" size={22} color="#fff" />
+            </View>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.bottomItem}
-            activeOpacity={0.8}
-            onPress={() => router.push("./calendar")}
-          >
-            {pathname === "/calendar" ? (
-              <View style={styles.activeCircle}>
-                <MaterialIcons name="calendar-today" size={22} color="#fff" />
-              </View>
-            ) : (
-              <MaterialIcons name="calendar-today" size={22} color="#5EA5E8" />
-            )}
+          <TouchableOpacity style={styles.bottomItem} activeOpacity={0.8}>
+            <MaterialIcons name="calendar-today" size={22} color="#5EA5E8" />
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.bottomItem}
-            activeOpacity={0.8}
-            onPress={() => router.push("./dashboard")}
-          >
-            {pathname === "/dashboard" ? (
-              <View style={styles.activeCircle}>
-                <MaterialIcons name="person-outline" size={24} color="#fff" />
-              </View>
-            ) : (
-              <MaterialIcons name="person-outline" size={24} color="#5EA5E8" />
-            )}
+          <TouchableOpacity style={styles.bottomItem} activeOpacity={0.8}>
+            <MaterialIcons name="person-outline" size={24} color="#5EA5E8" />
           </TouchableOpacity>
         </View>
       </View>
 
-      <CreateTaskModal 
-        visible={showCreateModal} 
+      <CreateTaskModal
+        visible={showCreateModal}
         mode={modalMode}
         initialData={selectedTask}
-        onClose={() => setShowCreateModal(false)} 
+        categories={categories.filter((item) => item !== "Todos")}
+        onAddCategory={(newCategory: string) => {
+          if (!categories.includes(newCategory)) {
+            setCategories((prev) => [...prev, newCategory]);
+          }
+        }}
+        onClose={() => setShowCreateModal(false)}
         onSaveTask={handleSaveTask}
       />
     </SafeAreaView>
   );
 }
 
-// CSS IGUAL AOS SEUS PRINTS
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,

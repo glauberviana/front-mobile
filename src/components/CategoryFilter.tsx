@@ -11,12 +11,14 @@ type CategoryFilterProps = {
   categories: string[];
   selected: string;
   onSelect: (category: string) => void;
+  onPressCreate?: () => void;
 };
 
 export default function CategoryFilter({
   categories,
   selected,
   onSelect,
+  onPressCreate,
 }: CategoryFilterProps) {
   return (
     <View style={styles.wrapper}>
