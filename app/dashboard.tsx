@@ -83,9 +83,15 @@ export default function Dashboard() {
           <Text style={styles.greeting}>Bem-vindo de volta</Text>
           <Text style={styles.userName}>Nayelly Roberta</Text>
         </View>
-        <TouchableOpacity>
-          <MaterialIcons name="edit" size={20} color="#6B7280" />
-        </TouchableOpacity>
+        <TouchableOpacity
+  onPress={() => router.push("/tasks/edit")}
+>
+  <MaterialIcons
+    name="edit"
+    size={20}
+    color="#6B7280"
+  />
+</TouchableOpacity>
       </View>
 
       <ScrollView
