@@ -23,7 +23,10 @@ const categories = ["Todos", "Trabalhos", "Pessoal", "Dia a dia", "Teste", "Outr
 export default function Home() {
   const insets = useSafeAreaInsets();
   const [selectedCategory, setSelectedCategory] = useState("Todos");
-<<<<<<< HEAD
+
+  const router = useRouter();
+  const pathname = usePathname();
+
   const [tasks, setTasks] = useState<{ id: string; title: string; category: string }[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any>(null);
@@ -31,32 +34,43 @@ export default function Home() {
 
   const handleSaveTask = (taskData: any) => {
     if (modalMode === "edit" && selectedTask) {
-      setTasks(tasks.map(t => t.id === selectedTask.id ? { ...t, title: taskData.title, category: taskData.category } : t));
+      setTasks(tasks.map(t =>
+        t.id === selectedTask.id
+          ? { ...t, title: taskData.title, category: taskData.category }
+          : t
+      ));
     } else {
       const newTask = {
         id: Math.random().toString(),
         title: taskData.title,
-        category: taskData.category === "Sem categoria" ? "Todos" : taskData.category,
+        category:
+          taskData.category === "Sem categoria"
+            ? "Todos"
+            : taskData.category,
       };
+
       setTasks([newTask, ...tasks]);
     }
+
     setShowCreateModal(false);
   };
-=======
-  const router = useRouter();
-  const pathname = usePathname();
->>>>>>> dev
 
   const filteredTasks = useMemo(() => {
     if (selectedCategory === "Todos") return tasks;
-    return tasks.filter((task) => task.category === selectedCategory);
-  }, [selectedCategory, tasks]); 
+
+    return tasks.filter(
+      (task) => task.category === selectedCategory
+    );
+  }, [selectedCategory, tasks]);
 
   const bottomBarHeight = 60 + insets.bottom;
   const fabBottom = bottomBarHeight + 16;
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+    <SafeAreaView
+      style={styles.safeArea}
+      edges={["top", "left", "right"]}
+    >
       <View style={styles.container}>
         <View style={styles.categoriesWrapper}>
           <CategoryFilter
@@ -74,6 +88,7 @@ export default function Home() {
                 style={styles.emptyImage}
                 resizeMode="contain"
               />
+
               <Text style={styles.emptyText}>
                 Nenhuma tarefa em {selectedCategory}
               </Text>
@@ -83,11 +98,13 @@ export default function Home() {
               data={filteredTasks}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
-                <TouchableOpacity onPress={() => {
-                  setSelectedTask(item);
-                  setModalMode("edit");
-                  setShowCreateModal(true);
-                }}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedTask(item);
+                    setModalMode("edit");
+                    setShowCreateModal(true);
+                  }}
+                >
                   <TaskCard title={item.title} />
                 </TouchableOpacity>
               )}
@@ -121,14 +138,9 @@ export default function Home() {
             },
           ]}
         >
-<<<<<<< HEAD
-          <TouchableOpacity style={styles.bottomItem} activeOpacity={0.8} onPress={() => { setModalMode("create"); setShowCreateModal(true); }}>
-            <MaterialIcons name="add" size={24} color="#5EA5E8" />
-=======
           <TouchableOpacity
             style={styles.bottomItem}
             activeOpacity={0.8}
-            // onPress={() => router.push("/create")}
           >
             {pathname === "/create" ? (
               <View style={styles.activeCircle}>
@@ -137,7 +149,6 @@ export default function Home() {
             ) : (
               <MaterialIcons name="add" size={24} color="#5EA5E8" />
             )}
->>>>>>> dev
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -161,10 +172,18 @@ export default function Home() {
           >
             {pathname === "/calendar" ? (
               <View style={styles.activeCircle}>
-                <MaterialIcons name="calendar-today" size={22} color="#fff" />
+                <MaterialIcons
+                  name="calendar-today"
+                  size={22}
+                  color="#fff"
+                />
               </View>
             ) : (
-              <MaterialIcons name="calendar-today" size={22} color="#5EA5E8" />
+              <MaterialIcons
+                name="calendar-today"
+                size={22}
+                color="#5EA5E8"
+              />
             )}
           </TouchableOpacity>
 
@@ -175,63 +194,78 @@ export default function Home() {
           >
             {pathname === "/dashboard" ? (
               <View style={styles.activeCircle}>
-                <MaterialIcons name="person-outline" size={24} color="#fff" />
+                <MaterialIcons
+                  name="person-outline"
+                  size={24}
+                  color="#fff"
+                />
               </View>
             ) : (
-              <MaterialIcons name="person-outline" size={24} color="#5EA5E8" />
+              <MaterialIcons
+                name="person-outline"
+                size={24}
+                color="#5EA5E8"
+              />
             )}
           </TouchableOpacity>
         </View>
       </View>
 
-      <CreateTaskModal 
-        visible={showCreateModal} 
+      <CreateTaskModal
+        visible={showCreateModal}
         mode={modalMode}
         initialData={selectedTask}
-        onClose={() => setShowCreateModal(false)} 
+        onClose={() => setShowCreateModal(false)}
         onSaveTask={handleSaveTask}
       />
     </SafeAreaView>
   );
 }
 
-// CSS IGUAL AOS SEUS PRINTS
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "#F3F4F6",
   },
+
   container: {
     flex: 1,
     backgroundColor: "#F3F4F6",
   },
+
   categoriesWrapper: {
     paddingTop: 8,
     paddingBottom: 8,
   },
+
   content: {
     flex: 1,
   },
+
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
   },
+
   emptyImage: {
     width: 170,
     height: 170,
   },
+
   emptyText: {
     marginTop: 12,
     fontSize: 14,
     color: "#6B7280",
     textAlign: "center",
   },
+
   listContent: {
     paddingHorizontal: 14,
     paddingTop: 8,
   },
+
   fab: {
     position: "absolute",
     right: 18,
@@ -247,6 +281,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.18,
     shadowRadius: 4,
   },
+
   bottomBar: {
     backgroundColor: "#F8F8F8",
     borderTopWidth: 1,
@@ -256,11 +291,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 8,
   },
+
   bottomItem: {
     width: 50,
     alignItems: "center",
     justifyContent: "center",
   },
+
   activeCircle: {
     width: 36,
     height: 36,
