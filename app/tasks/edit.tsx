@@ -2,12 +2,11 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { usePathname, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-    Alert,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from "react-native";
 import {
     SafeAreaView,
@@ -22,6 +21,7 @@ const COLORS = {
   text: "#111827",
   textMuted: "#6B7280",
   border: "#E5E7EB",
+  error: "#EF4444",
 };
 
 export default function EditScreen() {
@@ -33,11 +33,31 @@ export default function EditScreen() {
   const [email, setEmail] = useState("nayelly@email.com");
   const [phone, setPhone] = useState("(87) 99999-9999");
 
+  const [nameError, setNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+
   const bottomBarHeight = 60 + insets.bottom;
 
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, "");
+
+    if (numbers.length <= 2) {
+      return numbers;
+    }
+
+    if (numbers.length <= 7) {
+      return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    }
+
+    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+  };
+
   function handleSave() {
-    Alert.alert("Sucesso", "Perfil atualizado com sucesso!");
-  }
+  console.log("clicou no botão");
+
+  router.push("/home");
+}
 
   return (
     <SafeAreaView
@@ -87,11 +107,26 @@ export default function EditScreen() {
 
               <TextInput
                 value={name}
-                onChangeText={setName}
+                onChangeText={(text) => {
+                  setName(text);
+
+                  if (nameError) {
+                    setNameError("");
+                  }
+                }}
                 placeholder="Digite seu nome"
                 placeholderTextColor="#9CA3AF"
-                style={styles.input}
+                style={[
+                  styles.input,
+                  nameError ? styles.inputError : null,
+                ]}
               />
+
+              {nameError ? (
+                <Text style={styles.errorText}>
+                  {nameError}
+                </Text>
+              ) : null}
             </View>
 
             <View style={styles.inputWrapper}>
@@ -99,13 +134,28 @@ export default function EditScreen() {
 
               <TextInput
                 value={email}
-                onChangeText={setEmail}
+                onChangeText={(text) => {
+                  setEmail(text);
+
+                  if (emailError) {
+                    setEmailError("");
+                  }
+                }}
                 placeholder="Digite seu email"
                 placeholderTextColor="#9CA3AF"
                 keyboardType="email-address"
                 autoCapitalize="none"
-                style={styles.input}
+                style={[
+                  styles.input,
+                  emailError ? styles.inputError : null,
+                ]}
               />
+
+              {emailError ? (
+                <Text style={styles.errorText}>
+                  {emailError}
+                </Text>
+              ) : null}
             </View>
 
             <View style={styles.inputWrapper}>
@@ -113,12 +163,27 @@ export default function EditScreen() {
 
               <TextInput
                 value={phone}
-                onChangeText={setPhone}
+                onChangeText={(text) => {
+                  setPhone(formatPhone(text));
+
+                  if (phoneError) {
+                    setPhoneError("");
+                  }
+                }}
                 placeholder="Digite seu telefone"
                 placeholderTextColor="#9CA3AF"
                 keyboardType="phone-pad"
-                style={styles.input}
+                style={[
+                  styles.input,
+                  phoneError ? styles.inputError : null,
+                ]}
               />
+
+              {phoneError ? (
+                <Text style={styles.errorText}>
+                  {phoneError}
+                </Text>
+              ) : null}
             </View>
 
             <TouchableOpacity
@@ -148,10 +213,18 @@ export default function EditScreen() {
           >
             {pathname === "/create" ? (
               <View style={styles.activeCircle}>
-                <MaterialIcons name="add" size={24} color="#fff" />
+                <MaterialIcons
+                  name="add"
+                  size={24}
+                  color="#fff"
+                />
               </View>
             ) : (
-              <MaterialIcons name="add" size={24} color="#5EA5E8" />
+              <MaterialIcons
+                name="add"
+                size={24}
+                color="#5EA5E8"
+              />
             )}
           </TouchableOpacity>
 
@@ -162,10 +235,18 @@ export default function EditScreen() {
           >
             {pathname === "/home" ? (
               <View style={styles.activeCircle}>
-                <MaterialIcons name="list" size={22} color="#fff" />
+                <MaterialIcons
+                  name="list"
+                  size={22}
+                  color="#fff"
+                />
               </View>
             ) : (
-              <MaterialIcons name="list" size={22} color="#5EA5E8" />
+              <MaterialIcons
+                name="list"
+                size={22}
+                color="#5EA5E8"
+              />
             )}
           </TouchableOpacity>
 
@@ -311,6 +392,17 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     fontSize: 15,
     color: COLORS.text,
+  },
+
+  inputError: {
+    borderColor: COLORS.error,
+  },
+
+  errorText: {
+    color: COLORS.error,
+    fontSize: 13,
+    marginTop: 6,
+    marginLeft: 4,
   },
 
   saveButton: {
