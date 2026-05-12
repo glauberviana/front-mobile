@@ -18,27 +18,54 @@ import CategoryFilter from "@/src/components/CategoryFilter";
 import CreateTaskModal from "@/src/components/CreateTaskModal";
 import TaskCard from "@/src/components/TaskCard";
 
-const categories = ["Todos", "Trabalhos", "Pessoal", "Dia a dia", "Teste", "Outro"];
+const categories = [
+  "Todos",
+  "Trabalhos",
+  "Pessoal",
+  "Dia a dia",
+  "Teste",
+  "Outro",
+];
 
 export default function Home() {
   const insets = useSafeAreaInsets();
-  const [selectedCategory, setSelectedCategory] = useState("Todos");
+  const [selectedCategory, setSelectedCategory] =
+    useState("Todos");
 
   const router = useRouter();
   const pathname = usePathname();
 
-  const [tasks, setTasks] = useState<{ id: string; title: string; category: string }[]>([]);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [selectedTask, setSelectedTask] = useState<any>(null);
-  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
+  const [tasks, setTasks] = useState<
+    {
+      id: string;
+      title: string;
+      category: string;
+    }[]
+  >([]);
+
+  const [showCreateModal, setShowCreateModal] =
+    useState(false);
+
+  const [selectedTask, setSelectedTask] =
+    useState<any>(null);
+
+  const [modalMode, setModalMode] = useState<
+    "create" | "edit"
+  >("create");
 
   const handleSaveTask = (taskData: any) => {
     if (modalMode === "edit" && selectedTask) {
-      setTasks(tasks.map(t =>
-        t.id === selectedTask.id
-          ? { ...t, title: taskData.title, category: taskData.category }
-          : t
-      ));
+      setTasks(
+        tasks.map((t) =>
+          t.id === selectedTask.id
+            ? {
+                ...t,
+                title: taskData.title,
+                category: taskData.category,
+              }
+            : t
+        )
+      );
     } else {
       const newTask = {
         id: Math.random().toString(),
@@ -56,10 +83,13 @@ export default function Home() {
   };
 
   const filteredTasks = useMemo(() => {
-    if (selectedCategory === "Todos") return tasks;
+    if (selectedCategory === "Todos") {
+      return tasks;
+    }
 
     return tasks.filter(
-      (task) => task.category === selectedCategory
+      (task) =>
+        task.category === selectedCategory
     );
   }, [selectedCategory, tasks]);
 
@@ -90,7 +120,8 @@ export default function Home() {
               />
 
               <Text style={styles.emptyText}>
-                Nenhuma tarefa em {selectedCategory}
+                Nenhuma tarefa em{" "}
+                {selectedCategory}
               </Text>
             </View>
           ) : (
@@ -111,7 +142,10 @@ export default function Home() {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={[
                 styles.listContent,
-                { paddingBottom: bottomBarHeight + 90 },
+                {
+                  paddingBottom:
+                    bottomBarHeight + 90,
+                },
               ]}
             />
           )}
@@ -126,7 +160,11 @@ export default function Home() {
             setShowCreateModal(true);
           }}
         >
-          <MaterialIcons name="add" size={30} color="#fff" />
+          <MaterialIcons
+            name="add"
+            size={30}
+            color="#fff"
+          />
         </TouchableOpacity>
 
         <View
@@ -141,34 +179,31 @@ export default function Home() {
           <TouchableOpacity
             style={styles.bottomItem}
             activeOpacity={0.8}
-          >
-            {pathname === "/create" ? (
-              <View style={styles.activeCircle}>
-                <MaterialIcons name="add" size={24} color="#fff" />
-              </View>
-            ) : (
-              <MaterialIcons name="add" size={24} color="#5EA5E8" />
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.bottomItem}
-            activeOpacity={0.8}
             onPress={() => router.push("/home")}
           >
             {pathname === "/home" ? (
               <View style={styles.activeCircle}>
-                <MaterialIcons name="list" size={22} color="#fff" />
+                <MaterialIcons
+                  name="list"
+                  size={22}
+                  color="#fff"
+                />
               </View>
             ) : (
-              <MaterialIcons name="list" size={22} color="#5EA5E8" />
+              <MaterialIcons
+                name="list"
+                size={22}
+                color="#5EA5E8"
+              />
             )}
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.bottomItem}
             activeOpacity={0.8}
-            onPress={() => router.push("./calendar")}
+            onPress={() =>
+              router.push("./calendar")
+            }
           >
             {pathname === "/calendar" ? (
               <View style={styles.activeCircle}>
@@ -190,7 +225,9 @@ export default function Home() {
           <TouchableOpacity
             style={styles.bottomItem}
             activeOpacity={0.8}
-            onPress={() => router.push("./dashboard")}
+            onPress={() =>
+              router.push("./dashboard")
+            }
           >
             {pathname === "/dashboard" ? (
               <View style={styles.activeCircle}>
@@ -215,7 +252,9 @@ export default function Home() {
         visible={showCreateModal}
         mode={modalMode}
         initialData={selectedTask}
-        onClose={() => setShowCreateModal(false)}
+        onClose={() =>
+          setShowCreateModal(false)
+        }
         onSaveTask={handleSaveTask}
       />
     </SafeAreaView>
@@ -277,7 +316,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     elevation: 6,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
     shadowOpacity: 0.18,
     shadowRadius: 4,
   },
@@ -287,7 +329,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#E5E7EB",
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-evenly",
     alignItems: "center",
     paddingTop: 8,
   },

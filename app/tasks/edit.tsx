@@ -2,15 +2,15 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { usePathname, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from "react-native";
 import {
-    SafeAreaView,
-    useSafeAreaInsets,
+  SafeAreaView,
+  useSafeAreaInsets,
 } from "react-native-safe-area-context";
 
 const COLORS = {
@@ -54,10 +54,42 @@ export default function EditScreen() {
   };
 
   function handleSave() {
-  console.log("clicou no botão");
+    let hasError = false;
 
-  router.push("/home");
-}
+    if (name.trim() === "") {
+      setNameError("O nome não pode ficar vazio");
+      hasError = true;
+    } else {
+      setNameError("");
+    }
+
+    const emailRegex = /\S+@\S+\.\S+/;
+
+    if (!emailRegex.test(email)) {
+      setEmailError("Digite um email válido");
+      hasError = true;
+    } else {
+      setEmailError("");
+    }
+
+    const phoneNumbers = phone.replace(/\D/g, "");
+
+    if (
+      phoneNumbers.length > 0 &&
+      phoneNumbers.length < 11
+    ) {
+      setPhoneError("Telefone incompleto");
+      hasError = true;
+    } else {
+      setPhoneError("");
+    }
+
+    if (hasError) {
+      return;
+    }
+
+    router.push("/home");
+  }
 
   return (
     <SafeAreaView
@@ -94,7 +126,7 @@ export default function EditScreen() {
               />
             </View>
 
-            <TouchableOpacity activeOpacity={0.8}>
+            <TouchableOpacity activeOpacity={0.6}>
               <Text style={styles.changePhotoText}>
                 Alterar foto
               </Text>
@@ -188,7 +220,7 @@ export default function EditScreen() {
 
             <TouchableOpacity
               style={styles.saveButton}
-              activeOpacity={0.85}
+              activeOpacity={0.5}
               onPress={handleSave}
             >
               <Text style={styles.saveButtonText}>
@@ -207,27 +239,6 @@ export default function EditScreen() {
             },
           ]}
         >
-          <TouchableOpacity
-            style={styles.bottomItem}
-            activeOpacity={0.8}
-          >
-            {pathname === "/create" ? (
-              <View style={styles.activeCircle}>
-                <MaterialIcons
-                  name="add"
-                  size={24}
-                  color="#fff"
-                />
-              </View>
-            ) : (
-              <MaterialIcons
-                name="add"
-                size={24}
-                color="#5EA5E8"
-              />
-            )}
-          </TouchableOpacity>
-
           <TouchableOpacity
             style={styles.bottomItem}
             activeOpacity={0.8}
@@ -276,7 +287,7 @@ export default function EditScreen() {
             style={styles.bottomItem}
             activeOpacity={0.8}
           >
-            {pathname === "/edit" ? (
+            {pathname === "/tasks/edit" ? (
               <View style={styles.activeCircle}>
                 <MaterialIcons
                   name="person-outline"
@@ -425,7 +436,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-evenly",
     alignItems: "center",
     paddingTop: 8,
   },
