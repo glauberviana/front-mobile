@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { usePathname, useRouter } from "expo-router";
-import React from "react";
+import { useFocusEffect, usePathname, useRouter } from "expo-router";
+import React, { useCallback, useMemo, useState, useEffect } from "react";
 import {
   ScrollView,
   StyleSheet,
@@ -13,64 +13,87 @@ import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
+import { useTasks } from "@/src/contexts/TasksContext";
 
-const barData = [
-  {
-    value: 6,
-    label: "Dom",
-    frontColor: "#5EA5E8",
-  },
-  {
-    value: 4,
-    label: "Seg",
-    frontColor: "#5EA5E8",
-  },
-  {
-    value: 4,
-    label: "Ter",
-    frontColor: "#5EA5E8",
-  },
-  {
-    value: 4,
-    label: "Qua",
-    frontColor: "#5EA5E8",
-  },
-  {
-    value: 6.5,
-    label: "Qui",
-    frontColor: "#5EA5E8",
-  },
-  {
-    value: 1,
-    label: "Sex",
-    frontColor: "#5EA5E8",
-  },
-  {
-    value: 3,
-    label: "Sáb",
-    frontColor: "#5EA5E8",
-  },
-];
-
-const overdueTasks = [
-  "Revisar relatório mensal",
-  "Reunião com equipe",
-  "Entregar proposta comercial",
-  "Atualizar documentação",
-];
-
-const upcomingTasks = [
-  "Revisar relatório mensal",
-  "Reunião com equipe",
-  "Entregar proposta comercial",
-  "Atualizar documentação",
-];
+// Static variables removed, will be computed dynamically inside the component
 
 export default function Dashboard() {
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
   const bottomBarHeight = 60 + insets.bottom;
+
+  const { tasks, fetchTasks } = useTasks();
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchTasks();
+    }, [fetchTasks])
+  );
+
+  const completedCount = useMemo(() => tasks.filter((t) => t.is_completed).length, [tasks]);
+  const pendingCount = useMemo(() => tasks.filter((t) => !t.is_completed).length, [tasks]);
+
+  const getLocalDateStr = (date: Date) => {
+    const offset = date.getTimezoneOffset();
+    const localDate = new Date(date);
+    localDate.setMinutes(localDate.getMinutes() - offset);
+    return localDate.toISOString().split("T")[0];
+  };
+
+  const todayDateStr = useMemo(() => getLocalDateStr(new Date()), []);
+
+  const next7DaysStr = useMemo(() => {
+    const next7Days = new Date();
+    next7Days.setDate(next7Days.getDate() + 7);
+    return getLocalDateStr(next7Days);
+  }, []);
+
+  const overdueTasksList = useMemo(() => {
+    return tasks
+      .filter((t) => !t.is_completed && t.due_date && t.due_date.split(" ")[0] < todayDateStr)
+      .map((t) => t.title);
+  }, [tasks, todayDateStr]);
+
+  const upcomingTasksList = useMemo(() => {
+    return tasks
+      .filter((t) => !t.is_completed && t.due_date && t.due_date.split(" ")[0] >= todayDateStr && t.due_date.split(" ")[0] <= next7DaysStr)
+      .map((t) => t.title);
+  }, [tasks, todayDateStr, next7DaysStr]);
+
+  const chartData = useMemo(() => {
+    const data = [];
+    const today = new Date();
+    const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const dateStr = getLocalDateStr(d);
+
+      const count = tasks.filter(
+        (t) => t.is_completed && t.due_date && t.due_date.split(" ")[0] === dateStr
+      ).length;
+
+      data.push({
+        value: count,
+        label: weekDays[d.getDay()],
+        frontColor: "#5EA5E8",
+      });
+    }
+    return data;
+  }, [tasks]);
+
+  const chartNavText = useMemo(() => {
+    const startChartDate = new Date();
+    startChartDate.setDate(startChartDate.getDate() - 6);
+    const endChartDate = new Date();
+    return `${startChartDate.getDate()}/${startChartDate.getMonth() + 1} - ${endChartDate.getDate()}/${endChartDate.getMonth() + 1}`;
+  }, []);
+
+  const maxChartValue = useMemo(() => {
+    return Math.max(...chartData.map((d) => d.value), 4) + 2;
+  }, [chartData]);
 
   return (
     <SafeAreaView
@@ -135,7 +158,7 @@ export default function Dashboard() {
                 { color: "#fff" },
               ]}
             >
-              0
+              {completedCount}
             </Text>
 
             <Text
@@ -163,7 +186,7 @@ export default function Dashboard() {
                 { color: "#633806" },
               ]}
             >
-              0
+              {pendingCount}
             </Text>
 
             <Text
@@ -194,7 +217,7 @@ export default function Dashboard() {
               </TouchableOpacity>
 
               <Text style={styles.chartNavText}>
-                28/ 3–1
+                {chartNavText}
               </Text>
 
               <TouchableOpacity>
@@ -208,7 +231,7 @@ export default function Dashboard() {
           </View>
 
           <BarChart
-            data={barData}
+            data={chartData}
             barWidth={32}
             spacing={10}
             xAxisThickness={0.5}
@@ -216,7 +239,7 @@ export default function Dashboard() {
             yAxisTextStyle={styles.yAxisText}
             xAxisLabelTextStyle={styles.xAxisText}
             noOfSections={4}
-            maxValue={8}
+            maxValue={maxChartValue}
             initialSpacing={8}
             endSpacing={8}
             labelWidth={36}
@@ -227,13 +250,13 @@ export default function Dashboard() {
         {/* Tarefas atrasadas */}
         <TaskSection
           title="Tarefas Atrasadas"
-          tasks={overdueTasks}
+          tasks={overdueTasksList}
         />
 
         {/* Próximas tarefas */}
         <TaskSection
           title="Tarefas nos próximos 7 dias"
-          tasks={upcomingTasks}
+          tasks={upcomingTasksList}
         />
 
         <Text style={styles.hint}>
