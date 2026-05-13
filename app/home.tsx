@@ -1,4 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import { usePathname, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
   FlatList,
@@ -28,6 +29,8 @@ const INITIAL_CATEGORIES = [
 
 export default function Home() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const [categories, setCategories] = useState(INITIAL_CATEGORIES);
   const [selectedCategory, setSelectedCategory] = useState("Todos");
@@ -93,7 +96,10 @@ export default function Home() {
   const fabBottom = bottomBarHeight + 16;
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top", "left", "right"]}>
+    <SafeAreaView
+      style={styles.safeArea}
+      edges={["top", "left", "right"]}
+    >
       <View style={styles.container}>
         <View style={styles.categoriesWrapper}>
           <CategoryFilter
@@ -113,7 +119,8 @@ export default function Home() {
               />
 
               <Text style={styles.emptyText}>
-                Nenhuma tarefa em {selectedCategory}
+                Nenhuma tarefa em{" "}
+                {selectedCategory}
               </Text>
             </View>
           ) : (
@@ -135,7 +142,10 @@ export default function Home() {
               showsVerticalScrollIndicator={false}
               contentContainerStyle={[
                 styles.listContent,
-                { paddingBottom: bottomBarHeight + 90 },
+                {
+                  paddingBottom:
+                    bottomBarHeight + 90,
+                },
               ]}
             />
           )}
@@ -150,7 +160,11 @@ export default function Home() {
             setShowCreateModal(true);
           }}
         >
-          <MaterialIcons name="add" size={30} color="#fff" />
+          <MaterialIcons
+            name="add"
+            size={30}
+            color="#fff"
+          />
         </TouchableOpacity>
 
         <View
@@ -165,27 +179,67 @@ export default function Home() {
           <TouchableOpacity
             style={styles.bottomItem}
             activeOpacity={0.8}
-            onPress={() => {
-              setModalMode("create");
-              setSelectedTask(null);
-              setShowCreateModal(true);
-            }}
+            onPress={() => router.push("/home")}
           >
-            <MaterialIcons name="add" size={24} color="#5EA5E8" />
+            {pathname === "/home" ? (
+              <View style={styles.activeCircle}>
+                <MaterialIcons
+                  name="list"
+                  size={22}
+                  color="#fff"
+                />
+              </View>
+            ) : (
+              <MaterialIcons
+                name="list"
+                size={22}
+                color="#5EA5E8"
+              />
+            )}
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.bottomItem} activeOpacity={0.8}>
-            <View style={styles.activeCircle}>
-              <MaterialIcons name="list" size={22} color="#fff" />
-            </View>
+          <TouchableOpacity
+            style={styles.bottomItem}
+            activeOpacity={0.8}
+            onPress={() => router.push("./calendar")}
+          >
+            {pathname === "/calendar" ? (
+              <View style={styles.activeCircle}>
+                <MaterialIcons
+                  name="calendar-today"
+                  size={22}
+                  color="#fff"
+                />
+              </View>
+            ) : (
+              <MaterialIcons
+                name="calendar-today"
+                size={22}
+                color="#5EA5E8"
+              />
+            )}
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.bottomItem} activeOpacity={0.8}>
-            <MaterialIcons name="calendar-today" size={22} color="#5EA5E8" />
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.bottomItem} activeOpacity={0.8}>
-            <MaterialIcons name="person-outline" size={24} color="#5EA5E8" />
+          <TouchableOpacity
+            style={styles.bottomItem}
+            activeOpacity={0.8}
+            onPress={() => router.push("./dashboard")}
+          >
+            {pathname === "/dashboard" ? (
+              <View style={styles.activeCircle}>
+                <MaterialIcons
+                  name="person-outline"
+                  size={24}
+                  color="#fff"
+                />
+              </View>
+            ) : (
+              <MaterialIcons
+                name="person-outline"
+                size={24}
+                color="#5EA5E8"
+              />
+            )}
           </TouchableOpacity>
         </View>
       </View>
@@ -212,37 +266,45 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F3F4F6",
   },
+
   container: {
     flex: 1,
     backgroundColor: "#F3F4F6",
   },
+
   categoriesWrapper: {
     paddingTop: 8,
     paddingBottom: 8,
   },
+
   content: {
     flex: 1,
   },
+
   emptyContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
   },
+
   emptyImage: {
     width: 170,
     height: 170,
   },
+
   emptyText: {
     marginTop: 12,
     fontSize: 14,
     color: "#6B7280",
     textAlign: "center",
   },
+
   listContent: {
     paddingHorizontal: 14,
     paddingTop: 8,
   },
+
   fab: {
     position: "absolute",
     right: 18,
@@ -254,24 +316,30 @@ const styles = StyleSheet.create({
     alignItems: "center",
     elevation: 6,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
     shadowOpacity: 0.18,
     shadowRadius: 4,
   },
+
   bottomBar: {
     backgroundColor: "#F8F8F8",
     borderTopWidth: 1,
     borderTopColor: "#E5E7EB",
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-evenly",
     alignItems: "center",
     paddingTop: 8,
   },
+
   bottomItem: {
     width: 50,
     alignItems: "center",
     justifyContent: "center",
   },
+
   activeCircle: {
     width: 36,
     height: 36,
