@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { usePathname, useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import { useFocusEffect, usePathname, useRouter } from "expo-router";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   FlatList,
   Image,
@@ -17,72 +17,29 @@ import {
 import CategoryFilter from "@/src/components/CategoryFilter";
 import CreateTaskModal from "@/src/components/CreateTaskModal";
 import TaskCard from "@/src/components/TaskCard";
-
-const INITIAL_CATEGORIES = [
-  "Todos",
-  "Trabalhos",
-  "Pessoal",
-  "Dia a dia",
-  "Teste",
-  "Outro",
-];
+import { useTasks } from "@/src/contexts/TasksContext";
 
 export default function Home() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const pathname = usePathname();
 
-  const [categories, setCategories] = useState(INITIAL_CATEGORIES);
+  const { tasks, categories, fetchTasks, handleSaveTask, handleDeleteTask, handleToggleComplete } = useTasks();
+
   const [selectedCategory, setSelectedCategory] = useState("Todos");
-
-  const [tasks, setTasks] = useState<
-    { id: string; title: string; category: string }[]
-  >([]);
-
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any>(null);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
 
-  const handleAddCategory = (newCategory: string) => {
-    const formattedCategory = newCategory.trim();
+  // Busca as tasks sempre que a tela ganha foco
+  useFocusEffect(
+    useCallback(() => {
+      fetchTasks();
+    }, [fetchTasks])
+  );
 
-    if (!formattedCategory) return;
-
-    if (!categories.includes(formattedCategory)) {
-      setCategories((prev) => [...prev, formattedCategory]);
-    }
-  };
-
-  const handleSaveTask = (taskData: any) => {
-    const taskCategory =
-      taskData.category === "Sem categoria" ? "Todos" : taskData.category;
-
-    if (modalMode === "edit" && selectedTask) {
-      setTasks((prevTasks) =>
-        prevTasks.map((task) =>
-          task.id === selectedTask.id
-            ? {
-                ...task,
-                title: taskData.title,
-                category: taskCategory,
-              }
-            : task,
-        ),
-      );
-    } else {
-      const newTask = {
-        id: Math.random().toString(),
-        title: taskData.title,
-        category: taskCategory,
-      };
-
-      setTasks((prevTasks) => [newTask, ...prevTasks]);
-    }
-
-    if (taskCategory !== "Todos") {
-      handleAddCategory(taskCategory);
-    }
-
+  const onSaveTask = async (taskData: any) => {
+    await handleSaveTask(taskData, modalMode, selectedTask?.id);
     setShowCreateModal(false);
   };
 
@@ -136,7 +93,7 @@ export default function Home() {
                     setShowCreateModal(true);
                   }}
                 >
-                  <TaskCard title={item.title} />
+                  <TaskCard task={item} onToggle={handleToggleComplete} />
                 </TouchableOpacity>
               )}
               showsVerticalScrollIndicator={false}
@@ -249,13 +206,15 @@ export default function Home() {
         mode={modalMode}
         initialData={selectedTask}
         categories={categories.filter((item) => item !== "Todos")}
-        onAddCategory={(newCategory: string) => {
-          if (!categories.includes(newCategory)) {
-            setCategories((prev) => [...prev, newCategory]);
+        onAddCategory={useTasks().addCategory}
+        onClose={() => setShowCreateModal(false)}
+        onSaveTask={onSaveTask}
+        onDeleteTask={async () => {
+          if (selectedTask) {
+            await handleDeleteTask(selectedTask.id);
+            setShowCreateModal(false);
           }
         }}
-        onClose={() => setShowCreateModal(false)}
-        onSaveTask={handleSaveTask}
       />
     </SafeAreaView>
   );
