@@ -8,12 +8,17 @@ import {
   Text,
   TouchableOpacity,
   View,
+  FlatList,
+  ActivityIndicator
 } from "react-native";
 import { Calendar, DateData, LocaleConfig } from "react-native-calendars";
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
+import { useTasks } from "@/src/contexts/TasksContext";
+import TaskCard from "@/src/components/TaskCard";
+import CreateTaskModal from "@/src/components/CreateTaskModal";
 
 const COLORS = {
   accent: "#5EA5E8",
@@ -27,47 +32,12 @@ const COLORS = {
 };
 
 LocaleConfig.locales["pt-br"] = {
-  monthNames: [
-    "Janeiro",
-    "Fevereiro",
-    "Março",
-    "Abril",
-    "Maio",
-    "Junho",
-    "Julho",
-    "Agosto",
-    "Setembro",
-    "Outubro",
-    "Novembro",
-    "Dezembro",
-  ],
-  monthNamesShort: [
-    "Jan",
-    "Fev",
-    "Mar",
-    "Abr",
-    "Mai",
-    "Jun",
-    "Jul",
-    "Ago",
-    "Set",
-    "Out",
-    "Nov",
-    "Dez",
-  ],
-  dayNames: [
-    "Domingo",
-    "Segunda-feira",
-    "Terça-feira",
-    "Quarta-feira",
-    "Quinta-feira",
-    "Sexta-feira",
-    "Sábado",
-  ],
+  monthNames: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+  monthNamesShort: ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"],
+  dayNames: ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"],
   dayNamesShort: ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"],
   today: "Hoje",
 };
-
 LocaleConfig.defaultLocale = "pt-br";
 
 const MONTH_IMAGES: Record<number, ImageSourcePropType> = {
@@ -131,20 +101,23 @@ export default function CalendarScreen() {
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
 
+  const { tasks, isLoading, categories, addCategory, handleSaveTask, handleDeleteTask, handleToggleComplete } = useTasks();
+
   const todayString = new Date().toISOString().split("T")[0];
 
   const [selectedDate, setSelectedDate] = useState(todayString);
   const [visibleMonth, setVisibleMonth] = useState(todayString);
 
-  const currentMonth = useMemo(
-    () => new Date(`${visibleMonth}T12:00:00`).getMonth(),
-    [visibleMonth],
-  );
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<any>(null);
+  const [modalMode, setModalMode] = useState<"create" | "edit">("create");
 
-  const backgroundImage = useMemo(
-    () => MONTH_IMAGES[currentMonth] ?? FALLBACK_IMAGE,
-    [currentMonth],
-  );
+  const currentMonth = useMemo(() => new Date(`${visibleMonth}T12:00:00`).getMonth(), [visibleMonth]);
+  const backgroundImage = useMemo(() => MONTH_IMAGES[currentMonth] ?? FALLBACK_IMAGE, [currentMonth]);
+
+  function capitalize(str: string) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
 
   const formattedSelectedDate = useMemo(() => {
     const date = new Date(`${selectedDate}T12:00:00`);
@@ -155,16 +128,45 @@ export default function CalendarScreen() {
     });
   }, [selectedDate]);
 
+  const filteredTasks = useMemo(() => {
+    return tasks.filter((task) => {
+       if(!task.due_date) return false;
+       return task.due_date.split(' ')[0] === selectedDate;
+    });
+  }, [selectedDate, tasks]);
+
+  const markedDates = useMemo(() => {
+    const dates: any = {
+      [selectedDate]: {
+        selected: true,
+        selectedColor: COLORS.accent,
+        selectedTextColor: COLORS.white,
+      },
+    };
+    
+    tasks.forEach(task => {
+      if (task.due_date) {
+        const dateStr = task.due_date.split(' ')[0];
+        if (!dates[dateStr]) {
+          dates[dateStr] = { marked: true, dotColor: COLORS.white };
+        } else if (dateStr !== selectedDate) {
+          dates[dateStr].marked = true;
+          dates[dateStr].dotColor = COLORS.white;
+        } else {
+          dates[dateStr].marked = true;
+        }
+      }
+    });
+    
+    return dates;
+  }, [tasks, selectedDate]);
+
   const bottomBarHeight = 60 + insets.bottom;
   const fabBottom = bottomBarHeight + 16;
 
   function handleDayPress(day: DateData) {
     setSelectedDate(day.dateString);
     setVisibleMonth(day.dateString);
-  }
-
-  function handleMonthChange(month: DateData) {
-    setVisibleMonth(month.dateString);
   }
 
   return (
@@ -183,16 +185,10 @@ export default function CalendarScreen() {
             <Calendar
               current={visibleMonth}
               onDayPress={handleDayPress}
-              onMonthChange={handleMonthChange}
+              onMonthChange={(month) => setVisibleMonth(month.dateString)}
               enableSwipeMonths
               hideExtraDays={false}
-              markedDates={{
-                [selectedDate]: {
-                  selected: true,
-                  selectedColor: COLORS.accent,
-                  selectedTextColor: COLORS.white,
-                },
-              }}
+              markedDates={markedDates}
               theme={calendarTheme}
               style={styles.calendar}
             />
@@ -208,30 +204,55 @@ export default function CalendarScreen() {
 
           <View style={styles.divider} />
 
-          <View style={styles.emptyState}>
-            <View style={styles.emptyIconWrapper}>
-              <MaterialIcons
-                name="event-note"
-                size={36}
-                color={COLORS.accent}
-              />
+          {isLoading && tasks.length === 0 ? (
+            <View style={styles.emptyState}>
+              <ActivityIndicator size="large" color={COLORS.accent} />
             </View>
-
-            <Text style={styles.emptyTitle}>
-              Nenhuma tarefa
-            </Text>
-
-            <Text style={styles.emptySubtitle}>
-              Nenhuma tarefa cadastrada neste dia.
-            </Text>
-          </View>
+          ) : filteredTasks.length === 0 ? (
+             <View style={styles.emptyState}>
+               <View style={styles.emptyIconWrapper}>
+                 <MaterialIcons name="event-note" size={36} color={COLORS.accent} />
+               </View>
+               <Text style={styles.emptyTitle}>Nenhuma tarefa</Text>
+               <Text style={styles.emptySubtitle}>
+                 Toque em + para adicionar uma tarefa neste dia.
+               </Text>
+             </View>
+          ) : (
+            <FlatList
+              data={filteredTasks}
+              keyExtractor={item => item.id}
+              contentContainerStyle={{ paddingBottom: bottomBarHeight + 90, paddingHorizontal: 20 }}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onPress={() => {
+                    setSelectedTask({
+                      ...item,
+                      dateStr: item.due_date ? item.due_date.split(' ')[0] : null
+                    });
+                    setModalMode("edit");
+                    setShowCreateModal(true);
+                  }}
+                >
+                  <TaskCard 
+                    task={item} 
+                    onToggle={handleToggleComplete} 
+                  />
+                </TouchableOpacity>
+              )}
+            />
+          )}
         </View>
 
         <TouchableOpacity
           style={[styles.fab, { bottom: fabBottom }]}
           activeOpacity={0.85}
-          accessibilityRole="button"
-          accessibilityLabel="Adicionar tarefa"
+          onPress={() => {
+            setModalMode("create");
+            setSelectedTask({ dateStr: selectedDate });
+            setShowCreateModal(true);
+          }}
         >
           <MaterialIcons
             name="add"
@@ -240,15 +261,7 @@ export default function CalendarScreen() {
           />
         </TouchableOpacity>
 
-        <View
-          style={[
-            styles.bottomBar,
-            {
-              paddingBottom: insets.bottom,
-              minHeight: bottomBarHeight,
-            },
-          ]}
-        >
+        <View style={[styles.bottomBar, { paddingBottom: insets.bottom, minHeight: bottomBarHeight }]}>
           <TouchableOpacity
             style={styles.bottomItem}
             activeOpacity={0.8}
@@ -274,7 +287,7 @@ export default function CalendarScreen() {
           <TouchableOpacity
             style={styles.bottomItem}
             activeOpacity={0.8}
-            onPress={() => router.push("/calendar")}
+            onPress={() => router.push("/dashboard")}
           >
             {pathname === "/calendar" ? (
               <View style={styles.activeCircle}>
@@ -316,13 +329,27 @@ export default function CalendarScreen() {
           </TouchableOpacity>
         </View>
       </View>
+
+      <CreateTaskModal
+        visible={showCreateModal}
+        mode={modalMode}
+        initialData={selectedTask}
+        categories={categories.filter((item) => item !== "Todos")}
+        onAddCategory={addCategory}
+        onClose={() => setShowCreateModal(false)}
+        onSaveTask={async (data: any) => {
+           await handleSaveTask(data, modalMode, selectedTask?.id);
+           setShowCreateModal(false);
+        }}
+        onDeleteTask={async () => {
+           if(selectedTask) {
+             await handleDeleteTask(selectedTask.id);
+             setShowCreateModal(false);
+           }
+        }}
+      />
     </SafeAreaView>
   );
-}
-
-function capitalize(text: string) {
-  if (!text) return text;
-  return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
 const styles = StyleSheet.create({

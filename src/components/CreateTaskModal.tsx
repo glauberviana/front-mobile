@@ -10,7 +10,9 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
+  ScrollView,
 } from "react-native";
 import { Calendar, LocaleConfig } from "react-native-calendars";
 
@@ -223,6 +225,7 @@ export default function CreateTaskModal({
   );
 
   const [taskTitle, setTaskTitle] = useState("");
+  const [taskDescription, setTaskDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const [selectedCategory, setSelectedCategory] = useState("Sem categoria");
@@ -242,11 +245,13 @@ export default function CreateTaskModal({
     if (visible) {
       if (mode === "edit" && initialData) {
         setTaskTitle(initialData.title);
+        setTaskDescription(initialData.description || "");
         setSelectedCategory(initialData.category || "Sem categoria");
         setPriorityIndex(Math.max(0, PRIORITIES.indexOf(initialData.priority)));
         setSelectedDateStr(initialData.dateStr || tomorrowStr);
       } else {
         setTaskTitle("");
+        setTaskDescription("");
         setSelectedCategory("Sem categoria");
         setPriorityIndex(0);
         setRepeatOption("Não");
@@ -276,24 +281,26 @@ export default function CreateTaskModal({
     else if (type === "Este domingo") setSelectedDateStr(sundayStr);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!taskTitle.trim()) return;
 
     setIsLoading(true);
 
-    setTimeout(() => {
-      onSaveTask({
+    try {
+      await onSaveTask({
         id: mode === "edit" ? initialData?.id : Math.random().toString(),
         title: taskTitle.trim(),
+        description: taskDescription.trim(),
         category: selectedCategory,
         priority: PRIORITIES[priorityIndex],
         dateStr: selectedDateStr,
         repeat: repeatOption,
         reminder: REMINDERS[reminderIndex],
       });
-
       handleCloseAll();
-    }, 1200);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -309,7 +316,8 @@ export default function CreateTaskModal({
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={styles.keyboardAvoid}
           >
-            <TouchableOpacity activeOpacity={1} style={styles.card}>
+            <TouchableWithoutFeedback>
+              <View style={styles.card}>
               <View style={styles.inputContainer}>
                 <TextInput
                   placeholder="O que você precisa fazer?"
@@ -324,69 +332,93 @@ export default function CreateTaskModal({
                 <Text style={styles.charCounter}>{taskTitle.length}/50</Text>
               </View>
 
+              <View style={styles.descriptionContainer}>
+                <TextInput
+                  placeholder="Adicionar descrição (opcional)"
+                  placeholderTextColor="#9ca3af"
+                  style={styles.descriptionInput}
+                  maxLength={200}
+                  value={taskDescription}
+                  onChangeText={setTaskDescription}
+                  multiline
+                  numberOfLines={2}
+                  scrollEnabled={false}
+                  textAlignVertical="top"
+                />
+              </View>
+
               <View style={styles.divider} />
 
               <View style={styles.actionsRow}>
-                <View style={styles.leftActions}>
-                  <TouchableOpacity
-                    style={styles.badge}
-                    onPress={() => setIsCategoryModalVisible(true)}
-                  >
-                    <Text style={styles.badgeText}>{selectedCategory}</Text>
-                  </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.badge}
+                  onPress={() => setIsCategoryModalVisible(true)}
+                >
+                  <Text style={styles.badgeText} numberOfLines={1} ellipsizeMode="tail">
+                    {selectedCategory}
+                  </Text>
+                </TouchableOpacity>
 
-                  <TouchableOpacity
-                    style={styles.iconBtn}
-                    onPress={() => setShowDateModal(true)}
-                  >
-                    <MaterialIcons
-                      name="calendar-today"
-                      size={20}
-                      color={repeatOption !== "Não" ? "#5EA5E8" : "#9ca3af"}
-                    />
-                  </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.iconBtn}
+                  onPress={() => setShowDateModal(true)}
+                >
+                  <MaterialIcons
+                    name="calendar-today"
+                    size={20}
+                    color={repeatOption !== "Não" ? "#5EA5E8" : "#9ca3af"}
+                  />
+                </TouchableOpacity>
 
-                  <TouchableOpacity
-                    style={styles.iconBtn}
-                    onPress={() => setShowRepeatModal(true)}
-                  >
-                    <MaterialIcons
-                      name="repeat"
-                      size={20}
-                      color={repeatOption !== "Não" ? "#5EA5E8" : "#9ca3af"}
-                    />
-                  </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.iconBtn}
+                  onPress={() => setShowRepeatModal(true)}
+                >
+                  <MaterialIcons
+                    name="repeat"
+                    size={20}
+                    color={repeatOption !== "Não" ? "#5EA5E8" : "#9ca3af"}
+                  />
+                </TouchableOpacity>
 
-                  <TouchableOpacity
+                <TouchableOpacity
+                  style={[
+                    styles.badge,
+                    {
+                      borderColor: getPriorityColor(
+                        PRIORITIES[priorityIndex],
+                      ),
+                    },
+                  ]}
+                  onPress={() =>
+                    setPriorityIndex((priorityIndex + 1) % PRIORITIES.length)
+                  }
+                >
+                  <Text
                     style={[
-                      styles.badge,
+                      styles.badgeText,
                       {
-                        borderColor: getPriorityColor(
-                          PRIORITIES[priorityIndex],
-                        ),
+                        color: getPriorityColor(PRIORITIES[priorityIndex]),
+                        fontWeight: "bold",
                       },
                     ]}
-                    onPress={() =>
-                      setPriorityIndex((priorityIndex + 1) % PRIORITIES.length)
-                    }
+                    numberOfLines={1}
+                    ellipsizeMode="tail"
                   >
-                    <Text
-                      style={[
-                        styles.badgeText,
-                        {
-                          color: getPriorityColor(PRIORITIES[priorityIndex]),
-                          fontWeight: "bold",
-                        },
-                      ]}
-                    >
-                      {PRIORITIES[priorityIndex]}
-                    </Text>
-                  </TouchableOpacity>
+                    {PRIORITIES[priorityIndex]}
+                  </Text>
+                </TouchableOpacity>
 
-                  {mode === "edit" && (
-                    <TouchableOpacity
-                      style={styles.iconBtn}
-                      onPress={() => {
+                {mode === "edit" && (
+                  <TouchableOpacity
+                    style={styles.iconBtn}
+                    onPress={() => {
+                      if (Platform.OS === "web") {
+                        if (window.confirm("Tem certeza que deseja apagar?")) {
+                          onDeleteTask?.(initialData?.id);
+                          handleCloseAll();
+                        }
+                      } else {
                         Alert.alert(
                           "Excluir Tarefa",
                           "Tem certeza que deseja apagar?",
@@ -396,22 +428,22 @@ export default function CreateTaskModal({
                               text: "Excluir",
                               style: "destructive",
                               onPress: () => {
-                                onDeleteTask?.(initialData.id);
+                                onDeleteTask?.(initialData?.id);
                                 handleCloseAll();
                               },
                             },
                           ],
                         );
-                      }}
-                    >
-                      <MaterialIcons
-                        name="delete-outline"
-                        size={22}
-                        color="#ef4444"
-                      />
-                    </TouchableOpacity>
-                  )}
-                </View>
+                      }
+                    }}
+                  >
+                    <MaterialIcons
+                      name="delete-outline"
+                      size={24}
+                      color="#ef4444"
+                    />
+                  </TouchableOpacity>
+                )}
 
                 <TouchableOpacity
                   style={[
@@ -432,7 +464,8 @@ export default function CreateTaskModal({
                   )}
                 </TouchableOpacity>
               </View>
-            </TouchableOpacity>
+            </View>
+            </TouchableWithoutFeedback>
           </KeyboardAvoidingView>
         </TouchableOpacity>
       </Modal>
@@ -674,7 +707,7 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
     borderRadius: 16,
-    padding: 24,
+    padding: 16,
     marginBottom: 40,
     elevation: 8,
     shadowColor: "#000",
@@ -720,6 +753,21 @@ const styles = StyleSheet.create({
     color: "#9CA3AF",
     fontWeight: "500",
   },
+  descriptionContainer: {
+    marginBottom: 12,
+  },
+  descriptionInput: {
+    borderWidth: 1.5,
+    borderColor: "#E5E7EB",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: "#374151",
+    backgroundColor: "#FAFAFA",
+    minHeight: 52,
+    textAlignVertical: "top",
+  },
   divider: {
     height: 1,
     backgroundColor: "#F3F4F6",
@@ -729,28 +777,27 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-  },
-  leftActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    flexShrink: 1,
+    width: "100%",
+    gap: 4,
   },
   iconBtn: {
-    padding: 6,
+    padding: 2,
+    flexShrink: 0,
   },
   badge: {
     borderWidth: 1.5,
     borderColor: "#E5E7EB",
     borderRadius: 20,
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 6,
     backgroundColor: "#fff",
+    flexShrink: 1,
   },
   badgeText: {
     fontSize: 12,
     color: "#6B7280",
     fontWeight: "600",
+    maxWidth: 90,
   },
   sendButton: {
     width: 44,
@@ -764,6 +811,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 4,
+    flexShrink: 0,
   },
   quickDateRow: {
     flexDirection: "row",

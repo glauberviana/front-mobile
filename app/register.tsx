@@ -2,8 +2,7 @@
 import { Link, Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import api from "../src/services/api";
+import api, { setAuthToken } from "../src/services/api";
 import {
   Image,
   SafeAreaView,
@@ -57,7 +56,7 @@ export default function Register() {
 
       const { access_token } = response.data.data;
       if (access_token) {
-        await AsyncStorage.setItem("@TaskCycle:token", access_token);
+        await setAuthToken(access_token);
         setLoading(false);
         router.replace("/home");
       }
