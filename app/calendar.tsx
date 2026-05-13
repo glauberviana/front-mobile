@@ -178,6 +178,7 @@ export default function CalendarScreen() {
         >
           <View style={styles.headerOverlay} />
           <View style={{ height: Math.max(insets.top - 8, 0) }} />
+
           <View style={styles.calendarWrapper}>
             <Calendar
               current={visibleMonth}
@@ -216,9 +217,12 @@ export default function CalendarScreen() {
               />
             </View>
 
-            <Text style={styles.emptyTitle}>Nenhuma tarefa</Text>
+            <Text style={styles.emptyTitle}>
+              Nenhuma tarefa
+            </Text>
+
             <Text style={styles.emptySubtitle}>
-              Toque em + para adicionar uma tarefa neste dia.
+              Nenhuma tarefa cadastrada neste dia.
             </Text>
           </View>
         </View>
@@ -228,9 +232,12 @@ export default function CalendarScreen() {
           activeOpacity={0.85}
           accessibilityRole="button"
           accessibilityLabel="Adicionar tarefa"
-          //onPress={() => router.push("/create")}
         >
-          <MaterialIcons name="add" size={30} color={COLORS.white} />
+          <MaterialIcons
+            name="add"
+            size={30}
+            color={COLORS.white}
+          />
         </TouchableOpacity>
 
         <View
@@ -245,28 +252,22 @@ export default function CalendarScreen() {
           <TouchableOpacity
             style={styles.bottomItem}
             activeOpacity={0.8}
-            //onPress={() => router.push("/create")}
-          >
-            {pathname === "/create" ? (
-              <View style={styles.activeCircle}>
-                <MaterialIcons name="add" size={24} color="#fff" />
-              </View>
-            ) : (
-              <MaterialIcons name="add" size={24} color="#5EA5E8" />
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.bottomItem}
-            activeOpacity={0.8}
             onPress={() => router.push("/home")}
           >
             {pathname === "/home" ? (
               <View style={styles.activeCircle}>
-                <MaterialIcons name="list" size={22} color="#fff" />
+                <MaterialIcons
+                  name="list"
+                  size={22}
+                  color="#fff"
+                />
               </View>
             ) : (
-              <MaterialIcons name="list" size={22} color="#5EA5E8" />
+              <MaterialIcons
+                name="list"
+                size={22}
+                color="#5EA5E8"
+              />
             )}
           </TouchableOpacity>
 
@@ -277,24 +278,40 @@ export default function CalendarScreen() {
           >
             {pathname === "/calendar" ? (
               <View style={styles.activeCircle}>
-                <MaterialIcons name="calendar-today" size={22} color="#fff" />
+                <MaterialIcons
+                  name="calendar-today"
+                  size={22}
+                  color="#fff"
+                />
               </View>
             ) : (
-              <MaterialIcons name="calendar-today" size={22} color="#5EA5E8" />
+              <MaterialIcons
+                name="calendar-today"
+                size={22}
+                color="#5EA5E8"
+              />
             )}
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.bottomItem}
             activeOpacity={0.8}
-            //onPress={() => router.push("/dashboard")}
+            onPress={() => router.push("/dashboard")}
           >
             {pathname === "/dashboard" ? (
               <View style={styles.activeCircle}>
-                <MaterialIcons name="person-outline" size={24} color="#fff" />
+                <MaterialIcons
+                  name="person-outline"
+                  size={24}
+                  color="#fff"
+                />
               </View>
             ) : (
-              <MaterialIcons name="person-outline" size={24} color="#5EA5E8" />
+              <MaterialIcons
+                name="person-outline"
+                size={24}
+                color="#5EA5E8"
+              />
             )}
           </TouchableOpacity>
         </View>
@@ -354,9 +371,6 @@ const styles = StyleSheet.create({
 
   contentCard: {
     flex: 1,
-    //marginTop: -12,
-    //borderTopLeftRadius: 28,
-    //borderTopRightRadius: 28,
     backgroundColor: COLORS.background,
     paddingHorizontal: 20,
     paddingTop: 8,
@@ -437,7 +451,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-evenly",
     alignItems: "center",
     paddingTop: 8,
   },
