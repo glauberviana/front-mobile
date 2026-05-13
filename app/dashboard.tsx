@@ -14,6 +14,7 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { useTasks } from "@/src/contexts/TasksContext";
+import api from "@/src/services/api";
 
 // Static variables removed, will be computed dynamically inside the component
 
@@ -24,10 +25,16 @@ export default function Dashboard() {
   const bottomBarHeight = 60 + insets.bottom;
 
   const { tasks, fetchTasks } = useTasks();
+  const [userName, setUserName] = useState("");
 
   useFocusEffect(
     useCallback(() => {
       fetchTasks();
+      api.get("/auth/me")
+        .then((res) => {
+          setUserName(res.data?.data?.name || res.data?.name || "Usuário");
+        })
+        .catch((err) => console.log("Erro ao buscar usuário", err));
     }, [fetchTasks])
   );
 
@@ -116,7 +123,7 @@ export default function Dashboard() {
           </Text>
 
           <Text style={styles.userName}>
-            Nayelly Roberta
+            {userName || "Carregando..."}
           </Text>
         </View>
 
