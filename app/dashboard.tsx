@@ -7,6 +7,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Image,
 } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
 import {
@@ -26,13 +27,16 @@ export default function Dashboard() {
 
   const { tasks, fetchTasks } = useTasks();
   const [userName, setUserName] = useState("");
+  const [avatar, setAvatar] = useState<string | null>(null);
+  const [weekOffset, setWeekOffset] = useState(0); // 0 = semana atual, -1 = semana passada, etc.
 
   useFocusEffect(
     useCallback(() => {
       fetchTasks();
       api.get("/auth/me")
         .then((res) => {
-          setUserName(res.data?.data?.name || res.data?.name || "Usuário");
+          setUserName(res.data?.data?.user?.name || res.data?.data?.name || res.data?.name || "Usuário");
+          setAvatar(res.data?.data?.user?.avatar || null);
         })
         .catch((err) => console.log("Erro ao buscar usuário", err));
     }, [fetchTasks])
@@ -71,12 +75,18 @@ export default function Dashboard() {
   const chartData = useMemo(() => {
     const data = [];
     const today = new Date();
+    const todayStr = getLocalDateStr(today);
     const weekDays = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
+    // Calcula o dia final da semana selecionada
+    const endDay = new Date(today);
+    endDay.setDate(today.getDate() + (weekOffset * 7));
+
     for (let i = 6; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(today.getDate() - i);
+      const d = new Date(endDay);
+      d.setDate(endDay.getDate() - i);
       const dateStr = getLocalDateStr(d);
+      const isToday = dateStr === todayStr;
 
       const count = tasks.filter(
         (t) => t.is_completed && t.due_date && t.due_date.split(" ")[0] === dateStr
@@ -85,18 +95,23 @@ export default function Dashboard() {
       data.push({
         value: count,
         label: weekDays[d.getDay()],
-        frontColor: "#5EA5E8",
+        frontColor: isToday ? "#3B82F6" : "#5EA5E8",
+        topLabelComponent: isToday ? () => (
+          <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: "#3B82F6", alignSelf: "center", marginBottom: 4 }} />
+        ) : undefined,
       });
     }
     return data;
-  }, [tasks]);
+  }, [tasks, weekOffset]);
 
   const chartNavText = useMemo(() => {
-    const startChartDate = new Date();
-    startChartDate.setDate(startChartDate.getDate() - 6);
-    const endChartDate = new Date();
-    return `${startChartDate.getDate()}/${startChartDate.getMonth() + 1} - ${endChartDate.getDate()}/${endChartDate.getMonth() + 1}`;
-  }, []);
+    const today = new Date();
+    const endDay = new Date(today);
+    endDay.setDate(today.getDate() + (weekOffset * 7));
+    const startDay = new Date(endDay);
+    startDay.setDate(endDay.getDate() - 6);
+    return `${startDay.getDate()}/${startDay.getMonth() + 1} - ${endDay.getDate()}/${endDay.getMonth() + 1}`;
+  }, [weekOffset]);
 
   const maxChartValue = useMemo(() => {
     return Math.max(...chartData.map((d) => d.value), 4) + 2;
@@ -110,11 +125,18 @@ export default function Dashboard() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.avatar}>
-          <MaterialIcons
-            name="person-outline"
-            size={24}
-            color="#5EA5E8"
-          />
+          {avatar ? (
+            <Image
+              source={{ uri: avatar }}
+              style={{ width: 48, height: 48, borderRadius: 24 }}
+            />
+          ) : (
+            <MaterialIcons
+              name="person-outline"
+              size={24}
+              color="#5EA5E8"
+            />
+          )}
         </View>
 
         <View style={styles.userInfo}>
@@ -215,7 +237,7 @@ export default function Dashboard() {
             </Text>
 
             <View style={styles.chartNav}>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => setWeekOffset(prev => prev - 1)} style={{ padding: 4 }}>
                 <MaterialIcons
                   name="chevron-left"
                   size={18}
@@ -227,7 +249,11 @@ export default function Dashboard() {
                 {chartNavText}
               </Text>
 
-              <TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => { if (weekOffset < 0) setWeekOffset(prev => prev + 1); }}
+                style={{ padding: 4, opacity: weekOffset >= 0 ? 0.3 : 1 }}
+                disabled={weekOffset >= 0}
+              >
                 <MaterialIcons
                   name="chevron-right"
                   size={18}

@@ -1,17 +1,25 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { usePathname, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
+  Image,
+  Alert,
+  Platform,
+  ScrollView,
 } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   SafeAreaView,
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
+import api, { clearAuthToken, getCachedToken } from "@/src/services/api";
+import * as ImagePicker from "expo-image-picker";
+import { useTasks } from "@/src/contexts/TasksContext";
 
 const COLORS = {
   accent: "#5EA5E8",
@@ -28,14 +36,47 @@ export default function EditScreen() {
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
+  const { clearTasksData } = useTasks();
 
-  const [name, setName] = useState("Nayelly Roberta");
-  const [email, setEmail] = useState("nayelly@email.com");
-  const [phone, setPhone] = useState("(87) 99999-9999");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [avatar, setAvatar] = useState<string | null>(null);
 
   const [nameError, setNameError] = useState("");
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    api.get("/auth/me")
+      .then((res) => {
+        const user = res.data?.data?.user;
+        if (user) {
+          setName(user.name || "");
+          setEmail(user.email || "");
+          setPhone(user.phone || "");
+          if (user.avatar) {
+            setAvatar(user.avatar);
+          }
+        }
+      })
+      .catch((err) => console.log("Erro ao buscar dados do perfil", err));
+  }, []);
+
+  const handlePickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setAvatar(result.assets[0].uri);
+    }
+  };
 
   const bottomBarHeight = 60 + insets.bottom;
 
@@ -88,8 +129,99 @@ export default function EditScreen() {
       return;
     }
 
-    router.push("/home");
+    setIsLoading(true);
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("email", email);
+    formData.append("phone", phone);
+    formData.append("_method", "PUT");
+    const submitData = async () => {
+      try {
+        if (avatar && !avatar.startsWith("http")) {
+          const filename = avatar.split("/").pop() || "avatar.jpg";
+          const match = /\.(\w+)$/.exec(filename);
+          let type = match ? `image/${match[1]}` : `image/jpeg`;
+          
+          if (type === 'image/jpg') type = 'image/jpeg';
+
+          if (Platform.OS === "web") {
+            const res = await fetch(avatar);
+            const blob = await res.blob();
+            formData.append("avatar", blob, filename);
+          } else {
+            formData.append("avatar", {
+              uri: avatar,
+              name: filename,
+              type,
+            } as any);
+          }
+        }
+
+        // getCachedToken() funciona mesmo quando o AsyncStorage está quebrado (Expo Go)
+        const token = getCachedToken();
+        const baseURL = api.defaults.baseURL || "http://192.168.1.7:8000/api";
+        const url = `${baseURL}/auth/me`;
+        
+        console.log("📤 PROFILE SAVE - URL:", url);
+        console.log("📤 PROFILE SAVE - Token presente?", !!token);
+        console.log("📤 PROFILE SAVE - Avatar alterado?", avatar && !avatar.startsWith("http"));
+        
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
+          body: formData,
+        });
+
+        console.log("📤 PROFILE SAVE - Status:", response.status);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.log("📤 PROFILE SAVE - Erro body:", errorText);
+          try {
+            const errorData = JSON.parse(errorText);
+            throw { response: { data: errorData } };
+          } catch (parseErr) {
+            throw new Error(`Servidor retornou status ${response.status}: ${errorText.substring(0, 200)}`);
+          }
+        }
+        
+        console.log("✅ PROFILE SAVE - Sucesso!");
+        router.back();
+      } catch (error: any) {
+        console.log("❌ PROFILE SAVE - Erro completo:", error.message || error);
+        const apiError = error.response?.data?.errors;
+        if (apiError) {
+          if (apiError.name) setNameError(apiError.name[0]);
+          if (apiError.email) setEmailError(apiError.email[0]);
+          if (apiError.phone) setPhoneError(apiError.phone[0]);
+          if (apiError.avatar) Alert.alert("Erro na Foto", apiError.avatar[0]);
+        } else {
+           Alert.alert("Erro", `Não foi possível salvar o perfil.\n\n${error.message || 'Verifique os logs.'}`);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    submitData();
   }
+
+  const handleLogout = async () => {
+    try {
+      await api.post("/auth/logout");
+    } catch (err) {
+      console.log("Erro no logout", err);
+    } finally {
+      clearTasksData();
+      await AsyncStorage.removeItem("@TaskCycle:categories");
+      await clearAuthToken();
+      router.replace("/login");
+    }
+  };
 
   return (
     <SafeAreaView
@@ -116,17 +248,28 @@ export default function EditScreen() {
           <View style={{ width: 32 }} />
         </View>
 
-        <View style={styles.content}>
+        <ScrollView 
+          style={styles.content} 
+          contentContainerStyle={{ paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.profileSection}>
             <View style={styles.avatar}>
-              <MaterialIcons
-                name="person"
-                size={54}
-                color={COLORS.white}
-              />
+              {avatar ? (
+                <Image
+                  source={{ uri: avatar }}
+                  style={{ width: 110, height: 110, borderRadius: 55 }}
+                />
+              ) : (
+                <MaterialIcons
+                  name="person"
+                  size={54}
+                  color={COLORS.white}
+                />
+              )}
             </View>
 
-            <TouchableOpacity activeOpacity={0.6}>
+            <TouchableOpacity activeOpacity={0.6} onPress={handlePickImage}>
               <Text style={styles.changePhotoText}>
                 Alterar foto
               </Text>
@@ -222,13 +365,25 @@ export default function EditScreen() {
               style={styles.saveButton}
               activeOpacity={0.5}
               onPress={handleSave}
+              disabled={isLoading}
             >
               <Text style={styles.saveButtonText}>
-                Salvar alterações
+                {isLoading ? "Salvando..." : "Salvar alterações"}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.logoutButton}
+              activeOpacity={0.6}
+              onPress={handleLogout}
+            >
+              <MaterialIcons name="logout" size={20} color={COLORS.error} />
+              <Text style={styles.logoutButtonText}>
+                Sair da conta
               </Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </ScrollView>
 
         <View
           style={[
@@ -429,6 +584,21 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: 16,
     fontWeight: "700",
+  },
+
+  logoutButton: {
+    marginTop: 16,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+
+  logoutButtonText: {
+    color: COLORS.error,
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 8,
   },
 
   bottomBar: {

@@ -55,6 +55,7 @@ export default function Login() {
       }
     } catch (error: any) {
       setLoading(false);
+      console.log("LOGIN ERROR:", error.message, error.response?.data);
       const apiError = error.response?.data?.message || "Erro de conexão ou credenciais inválidas.";
       setErrors({ email: apiError });
     }

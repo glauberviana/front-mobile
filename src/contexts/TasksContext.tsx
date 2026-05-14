@@ -1,6 +1,7 @@
-import React, { createContext, useCallback, useContext, useState } from 'react';
+import React, { createContext, useCallback, useContext, useState, useEffect } from 'react';
 import { Alert } from 'react-native';
 import api from '@/src/services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type Task = {
   id: string;
@@ -23,6 +24,7 @@ type TasksContextData = {
   handleSaveTask: (taskData: any, mode: 'create' | 'edit', selectedTaskId?: string) => Promise<void>;
   handleDeleteTask: (id: string) => Promise<void>;
   handleToggleComplete: (id: string, currentStatus: boolean) => Promise<void>;
+  clearTasksData: () => void;
 };
 
 const INITIAL_CATEGORIES = ["Todos", "Trabalhos", "Pessoal", "Dia a dia", "Teste", "Outro"];
@@ -34,10 +36,30 @@ export const TasksProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isLoading, setIsLoading] = useState(false);
   const [categories, setCategories] = useState(INITIAL_CATEGORIES);
 
-  const addCategory = useCallback((newCategory: string) => {
+  useEffect(() => {
+    const loadSavedCategories = async () => {
+      try {
+        const saved = await AsyncStorage.getItem('@TaskCycle:categories');
+        if (saved) {
+          setCategories(JSON.parse(saved));
+        }
+      } catch (error) {
+        console.log("Erro ao carregar categorias do storage", error);
+      }
+    };
+    loadSavedCategories();
+  }, []);
+
+  const addCategory = useCallback(async (newCategory: string) => {
     const formatted = newCategory.trim();
     if (formatted && !categories.includes(formatted)) {
-      setCategories(prev => [...prev, formatted]);
+      const updatedCategories = [...categories, formatted];
+      setCategories(updatedCategories);
+      try {
+        await AsyncStorage.setItem('@TaskCycle:categories', JSON.stringify(updatedCategories));
+      } catch (e) {
+        console.warn("Erro silencioso no AsyncStorage:", e);
+      }
     }
   }, [categories]);
 
@@ -46,7 +68,26 @@ export const TasksProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       setIsLoading(true);
       const response = await api.get('/tasks');
       if (response.data && response.data.data) {
-        setTasks(response.data.data);
+        const fetchedTasks = response.data.data;
+        setTasks(fetchedTasks);
+
+        // Extrair categorias existentes das tarefas vindas do banco
+        setCategories(prev => {
+          const unique = new Set(prev);
+          fetchedTasks.forEach((t: Task) => {
+            if (t.category && t.category !== "Sem categoria") {
+              unique.add(t.category);
+            }
+          });
+          const merged = Array.from(unique);
+          if (merged.length !== prev.length) {
+            AsyncStorage.setItem('@TaskCycle:categories', JSON.stringify(merged)).catch(e => {
+              console.warn("Erro silencioso ao salvar categorias no AsyncStorage:", e);
+            });
+            return merged;
+          }
+          return prev;
+        });
       }
     } catch (error) {
       console.log("Erro ao buscar tarefas", error);
@@ -110,10 +151,15 @@ export const TasksProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  const clearTasksData = useCallback(() => {
+    setTasks([]);
+    setCategories(INITIAL_CATEGORIES);
+  }, []);
+
   return (
     <TasksContext.Provider value={{
       tasks, isLoading, categories, fetchTasks, addCategory,
-      handleSaveTask, handleDeleteTask, handleToggleComplete
+      handleSaveTask, handleDeleteTask, handleToggleComplete, clearTasksData
     }}>
       {children}
     </TasksContext.Provider>

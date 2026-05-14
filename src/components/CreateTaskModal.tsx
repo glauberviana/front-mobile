@@ -473,38 +473,39 @@ export default function CreateTaskModal({
       {/* MODAL 2: CALENDÁRIO COM A BIBLIOTECA OFICIAL */}
       <Modal visible={showDateModal} transparent animationType="fade">
         <View style={styles.modalOverlayCenter}>
-          <View style={styles.centerCard}>
-            <Calendar
-              minDate={tomorrowStr}
-              hideExtraDays={true}
-              current={selectedDateStr || tomorrowStr}
-              onDayPress={(day: any) => setSelectedDateStr(day.dateString)}
-              markedDates={{
-                [selectedDateStr]: { selected: true, selectedColor: "#5EA5E8" },
-              }}
-              theme={{
-                backgroundColor: "#ffffff",
-                calendarBackground: "#ffffff",
-                textSectionTitleColor: "#9ca3af",
-                selectedDayBackgroundColor: "#5EA5E8",
-                selectedDayTextColor: "#ffffff",
-                todayTextColor: "#f59e0b",
-                dayTextColor: "#374151",
-                textDisabledColor: "#d1d5db",
-                arrowColor: "#5EA5E8",
-                monthTextColor: "#111827",
-                textDayFontWeight: "500",
-                textMonthFontWeight: "bold",
-                textDayHeaderFontWeight: "bold",
-              }}
-              renderArrow={(direction: string) => (
-                <MaterialIcons
-                  name={direction === "left" ? "chevron-left" : "chevron-right"}
-                  size={26}
-                  color="#5EA5E8"
-                />
-              )}
-            />
+          <View style={[styles.centerCard, { maxHeight: '90%', paddingBottom: 16 }]}>
+            <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+              <Calendar
+                minDate={tomorrowStr}
+                hideExtraDays={true}
+                current={selectedDateStr || tomorrowStr}
+                onDayPress={(day: any) => setSelectedDateStr(day.dateString)}
+                markedDates={{
+                  [selectedDateStr]: { selected: true, selectedColor: "#5EA5E8" },
+                }}
+                theme={{
+                  backgroundColor: "#ffffff",
+                  calendarBackground: "#ffffff",
+                  textSectionTitleColor: "#9ca3af",
+                  selectedDayBackgroundColor: "#5EA5E8",
+                  selectedDayTextColor: "#ffffff",
+                  todayTextColor: "#f59e0b",
+                  dayTextColor: "#374151",
+                  textDisabledColor: "#d1d5db",
+                  arrowColor: "#5EA5E8",
+                  monthTextColor: "#111827",
+                  textDayFontWeight: "500",
+                  textMonthFontWeight: "bold",
+                  textDayHeaderFontWeight: "bold",
+                }}
+                renderArrow={(direction: string) => (
+                  <MaterialIcons
+                    name={direction === "left" ? "chevron-left" : "chevron-right"}
+                    size={26}
+                    color="#5EA5E8"
+                  />
+                )}
+              />
 
             <View style={styles.quickDateRow}>
               {["Sem data", "Amanhã", "3 Dias depois", "Este domingo"].map(
@@ -590,8 +591,9 @@ export default function CreateTaskModal({
                 </Text>
               </TouchableOpacity>
             </View>
+            </ScrollView>
 
-            <View style={styles.modalFooter}>
+            <View style={[styles.modalFooter, { marginTop: 16 }]}>
               <TouchableOpacity
                 style={styles.cancelActionBtn}
                 onPress={() => setShowDateModal(false)}

@@ -52,6 +52,7 @@ export default function Register() {
         name: formData.nome,
         email: formData.email,
         password: formData.senha,
+        phone: formData.contato,
       });
 
       const { access_token } = response.data.data;
